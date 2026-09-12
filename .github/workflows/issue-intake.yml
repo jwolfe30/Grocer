@@ -15,6 +15,7 @@ jobs:
       - name: Label and post the agent playbook
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
           ISSUE: ${{ github.event.issue.number }}
         run: |
           gh label create ready-for-agent --color 5319E7 --description "New request or feature ready for a Cursor agent" --force

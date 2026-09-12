@@ -2,7 +2,7 @@ name: Ensure PR has a ticket
 
 on:
   pull_request:
-    types: [opened, edited, reopened, ready_for_review]
+    types: [opened, edited, synchronize, reopened, ready_for_review]
 
 permissions:
   issues: write
@@ -16,10 +16,10 @@ jobs:
       - name: Open a ticket when the PR has no linked issue
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
           PR: ${{ github.event.pull_request.number }}
           TITLE: ${{ github.event.pull_request.title }}
           BODY: ${{ github.event.pull_request.body }}
-          REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
 
@@ -33,7 +33,7 @@ jobs:
             exit 0
           fi
 
-          existing="$(gh issue list --search "repo:${REPO} in:body ticket-source:pr-${PR}" --json number --jq '.[0].number // empty')"
+          existing="$(gh issue list --search "in:body ticket-source:pr-${PR}" --json number --jq '.[0].number // empty')"
           if [[ -n "$existing" ]]; then
             echo "Ticket #$existing already exists for PR $PR."
             exit 0

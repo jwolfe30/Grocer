@@ -21,6 +21,7 @@ jobs:
       - name: Create missing labels
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
         run: |
           python3 - <<'PY'
           import json, subprocess, sys
