@@ -1,0 +1,40 @@
+name: Ticket intake
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+
+jobs:
+  intake:
+    if: ${{ !contains(github.event.issue.body || '', '<!-- ticket-completed -->') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Label and post the agent playbook
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          ISSUE: ${{ github.event.issue.number }}
+        run: |
+          gh label create ready-for-agent --color 5319E7 --description "New request or feature ready for a Cursor agent" --force
+          gh issue edit "$ISSUE" --add-label "ready-for-agent"
+
+          gh issue comment "$ISSUE" --body "$(cat <<'EOF'
+          ## Agent ticket playbook
+
+          Implement this ticket on a branch and open a pull request that includes `Fixes #${{ github.event.issue.number }}`.
+
+          When the work is done, the PR **must** include all four sections:
+
+          1. **Summary** — restate the issue and the outcome
+          2. **What changed** — files, APIs, and user-visible behavior
+          3. **How problems were resolved** — defects, tradeoffs, follow-ups
+          4. **QA verification** — `npm run qa` plus the flows you actually exercised
+
+          Run `npm run qa` (lint + production build) and paste the result into **QA verification**. For Grocer UI or API changes, also exercise the list builder, match/optimize path, and any empty or error states you touched.
+
+          Merging the PR posts that completion write-up back onto this issue.
+          EOF
+          )"

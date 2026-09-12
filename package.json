@@ -6,7 +6,9 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "node --test .github/scripts/ticket-lib.test.mjs",
+    "qa": "bash scripts/qa.sh"
   },
   "dependencies": {
     "next": "^15.5.2",

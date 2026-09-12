@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Ticket workflow
+    url: https://github.com/jwolfe30/Grocer/blob/master/docs/TICKET_WORKFLOW.md
+    about: How requests become GitHub tickets and how agents complete them with QA

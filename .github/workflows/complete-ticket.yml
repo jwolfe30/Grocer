@@ -1,0 +1,81 @@
+name: Complete tickets from merged PRs
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  issues: write
+  pull-requests: read
+
+jobs:
+  complete:
+    if: ${{ github.event.pull_request.merged == true }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Post completion summary on linked issues
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          TITLE: ${{ github.event.pull_request.title }}
+          BODY: ${{ github.event.pull_request.body }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          set -euo pipefail
+
+          extracted="$(mktemp)"
+          comment="$(mktemp)"
+          printf '%s' "$BODY" | node .github/scripts/ticket-lib.mjs extract-completion > "$extracted"
+          qa_ok="$(node .github/scripts/ticket-lib.mjs field "$extracted" qaOk)"
+          node .github/scripts/ticket-lib.mjs format-completion "$extracted" "$PR_URL" "$TITLE" > "$comment"
+
+          numbers="$(gh api graphql -f query='
+            query($owner:String!, $name:String!, $number:Int!) {
+              repository(owner:$owner, name:$name) {
+                pullRequest(number:$number) {
+                  closingIssuesReferences(first: 20) { nodes { number } }
+                }
+              }
+            }' -f owner='${{ github.repository_owner }}' -f name='${{ github.event.repository.name }}' -F number="$PR" --jq '.data.repository.pullRequest.closingIssuesReferences.nodes[].number')"
+
+          if [[ -z "$numbers" ]]; then
+            numbers="$(printf '%s\n' "$BODY" | grep -Eo '(Fixes|Closes|Resolves|Close|Fix|Resolve)[[:space:]]+#[[:digit:]]+' | grep -Eo '[[:digit:]]+' || true)"
+          fi
+
+          if [[ -z "$numbers" ]]; then
+            issue_body="$(mktemp)"
+            {
+              cat "$comment"
+              echo
+              echo "<!-- ticket-completed -->"
+              echo "<!-- ticket-source:pr-${PR} -->"
+            } > "$issue_body"
+            url="$(gh issue create --title "$TITLE" --body-file "$issue_body")"
+            numbers="${url##*/}"
+            gh issue close "$numbers" --reason completed --comment "Opened as the ticket record for merged PR #${PR}."
+          fi
+
+          gh label create ticket-completed --color 0E8A16 --description "Ticket closed with summary, changes, resolution, and QA" --force
+          gh label create qa-verified --color 0E8A16 --description "Lint, build, and documented verification passed" --force
+          gh label create needs-qa --color D93F0B --description "Completion is missing QA evidence" --force
+
+          for number in $numbers; do
+            gh issue comment "$number" --body-file "$comment"
+            gh issue edit "$number" --add-label "ticket-completed" || true
+            gh issue edit "$number" --remove-label "ready-for-agent" || true
+            gh issue edit "$number" --remove-label "in-progress" || true
+            if [[ "$qa_ok" == "true" ]]; then
+              gh issue edit "$number" --add-label "qa-verified" || true
+              gh issue edit "$number" --remove-label "needs-qa" || true
+            else
+              gh issue edit "$number" --add-label "needs-qa" || true
+            fi
+            state="$(gh issue view "$number" --json state --jq .state)"
+            if [[ "$state" != "CLOSED" ]]; then
+              gh issue close "$number" --reason completed
+            fi
+          done

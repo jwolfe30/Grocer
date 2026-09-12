@@ -1,0 +1,24 @@
+# Custom Grocer ticket labels. Synced by .github/workflows/sync-labels.yml
+# Default GitHub labels (bug, enhancement, …) are left in place.
+
+- name: ready-for-agent
+  color: "5319E7"
+  description: New request or feature ready for a Cursor agent
+- name: in-progress
+  color: "FBCA04"
+  description: An agent or PR is actively working this ticket
+- name: needs-qa
+  color: "D93F0B"
+  description: Completion is missing QA evidence
+- name: qa-verified
+  color: "0E8A16"
+  description: Lint, build, and documented verification passed
+- name: ticket-completed
+  color: "0E8A16"
+  description: Ticket closed with summary, changes, resolution, and QA
+- name: from-inbox
+  color: "1D76DB"
+  description: Opened automatically from tickets/inbox
+- name: from-pr
+  color: "0052CC"
+  description: Opened automatically from a pull request
