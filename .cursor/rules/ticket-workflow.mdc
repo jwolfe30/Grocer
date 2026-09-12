@@ -1,0 +1,18 @@
+---
+description: Turn requests into GitHub tickets and complete them with QA
+alwaysApply: true
+---
+
+# Ticket workflow
+
+New requests, features, and bugs become GitHub Issues before implementation.
+
+- Create the ticket first (`scripts/new-ticket.sh`, GitHub issue templates, or
+  `gh issue create` when available). Inbox files under `tickets/inbox/*.md`
+  are opened automatically on push.
+- Implement on a branch and open a PR that includes `Fixes #<issue>`.
+- The PR body must include **Summary**, **What changed**, **How problems were
+  resolved**, and **QA verification**.
+- Run `npm run qa` and paste pass/fail evidence. For Grocer UI or API work,
+  also exercise list builder, match/optimize, and related edge states.
+- Follow `AGENTS.md` and `docs/TICKET_WORKFLOW.md`.

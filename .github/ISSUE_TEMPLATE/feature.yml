@@ -1,0 +1,62 @@
+name: Feature request
+description: Turn a new Grocer request or capability into a ticket
+title: "[Feature]: "
+labels: ["enhancement", "ready-for-agent"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        File a ticket before implementation. The agent will close this issue
+        with a summary, a change list, problem resolution, and QA verification.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What should Grocer do that it does not do today?
+      placeholder: Shoppers should be able to pin a preferred store before optimizing.
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: Why this matters, including the current workaround if any.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Checklist the agent must satisfy before the ticket is complete.
+      placeholder: |
+        - [ ] Preferred store is saved on the list
+        - [ ] Optimize respects the pin when building plans
+      value: |
+        - [ ]
+    validations:
+      required: true
+  - type: textarea
+    id: qa_plan
+    attributes:
+      label: QA plan
+      description: How the agent should prove this works. Include UI flows and API paths when relevant.
+      value: |
+        - [ ] `npm run qa` (lint + production build)
+        - [ ] Exercise the changed Grocer flow end to end
+        - [ ] Check related list / match / optimize behavior for regressions
+        - [ ] Cover empty, error, and flag/edge states
+    validations:
+      required: true
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Primary surface
+      options:
+        - List builder UI
+        - Match / optimize
+        - Catalog / Kroger
+        - REST API
+        - Docs / workflow
+        - Other
+    validations:
+      required: true

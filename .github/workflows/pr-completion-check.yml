@@ -1,0 +1,37 @@
+name: PR completion template
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Require completion headings
+        env:
+          BODY: ${{ github.event.pull_request.body }}
+        run: |
+          set -euo pipefail
+          result="$(mktemp)"
+          printf '%s' "$BODY" | node .github/scripts/ticket-lib.mjs extract-completion > "$result"
+          missing="$(node -e 'const fs=require("fs"); const p=JSON.parse(fs.readFileSync(process.argv[1],"utf8")); console.log((p.missing||[]).join("\n"))' "$result")"
+          if [[ -n "$missing" ]]; then
+            echo "Pull request body is missing required headings:"
+            echo "$missing"
+            echo
+            echo "Add these sections from .github/PULL_REQUEST_TEMPLATE.md:"
+            echo "- Summary"
+            echo "- What changed"
+            echo "- How problems were resolved"
+            echo "- QA verification"
+            exit 1
+          fi
+          echo "Required completion headings are present."

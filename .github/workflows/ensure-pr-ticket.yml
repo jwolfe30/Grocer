@@ -1,0 +1,65 @@
+name: Ensure PR has a ticket
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, ready_for_review]
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  ensure-ticket:
+    if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Open a ticket when the PR has no linked issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+          TITLE: ${{ github.event.pull_request.title }}
+          BODY: ${{ github.event.pull_request.body }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          if printf '%s\n' "$TITLE" "$BODY" | grep -Eq '(Fixes|Closes|Resolves|Close|Fix|Resolve)[[:space:]]+#[[:digit:]]+'; then
+            echo "PR already references a closing issue."
+            exit 0
+          fi
+
+          if printf '%s\n' "$BODY" | grep -Eq '<!-- ticket-source:pr-[[:digit:]]+ -->'; then
+            echo "PR already has an auto-opened ticket marker."
+            exit 0
+          fi
+
+          existing="$(gh issue list --search "repo:${REPO} in:body ticket-source:pr-${PR}" --json number --jq '.[0].number // empty')"
+          if [[ -n "$existing" ]]; then
+            echo "Ticket #$existing already exists for PR $PR."
+            exit 0
+          fi
+
+          tmp="$(mktemp)"
+          cat > "$tmp" <<EOF
+          ## Summary
+
+          ${TITLE}
+
+          ## Request
+
+          ${BODY}
+
+          This ticket was opened automatically so the pull request has a tracked issue.
+
+          <!-- ticket-source:pr-${PR} -->
+          EOF
+
+          gh label create ready-for-agent --color 5319E7 --description "New request or feature ready for a Cursor agent" --force
+          gh label create from-pr --color 0052CC --description "Opened automatically from a pull request" --force
+          gh label create in-progress --color FBCA04 --description "An agent or PR is actively working this ticket" --force
+
+          url="$(gh issue create --title "$TITLE" --body-file "$tmp" --label ready-for-agent --label from-pr --label in-progress)"
+          number="${url##*/}"
+
+          gh pr comment "$PR" --body "Opened ticket #${number} for this request. Add \`Fixes #${number}\` to the PR body so merge closes it with the completion summary."
+          echo "Opened #$number for PR $PR"

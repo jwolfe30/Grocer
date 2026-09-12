@@ -1,0 +1,97 @@
+name: Open tickets from inbox
+
+on:
+  push:
+    paths:
+      - "tickets/inbox/*.md"
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  open:
+    if: ${{ github.actor != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create issues from new inbox files
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          created=0
+          for file in tickets/inbox/*.md; do
+            name="$(basename "$file")"
+            if [[ "$name" == "README.md" ]]; then
+              continue
+            fi
+
+            parsed="$(mktemp)"
+            node .github/scripts/ticket-lib.mjs parse-inbox "$file" > "$parsed"
+            issue="$(node .github/scripts/ticket-lib.mjs field "$parsed" issue)"
+            if [[ -n "$issue" ]]; then
+              echo "skip $file (already issue #$issue)"
+              continue
+            fi
+
+            title="$(node .github/scripts/ticket-lib.mjs field "$parsed" title)"
+            type="$(node .github/scripts/ticket-lib.mjs field "$parsed" type)"
+            body="$(node .github/scripts/ticket-lib.mjs field "$parsed" body)"
+            labels="$(node .github/scripts/ticket-lib.mjs field "$parsed" labels)"
+
+            if [[ -z "$title" ]]; then
+              title="${name%.md}"
+              title="${title//-/ }"
+            fi
+
+            extra="ready-for-agent,from-inbox"
+            case "$type" in
+              feature) extra="$extra,enhancement" ;;
+              bug) extra="$extra,bug" ;;
+            esac
+            if [[ -n "$labels" ]]; then
+              extra="$extra,$labels"
+            fi
+
+            # Deduplicate labels
+            extra="$(echo "$extra" | tr ',' '\n' | awk 'NF && !seen[$0]++' | paste -sd, -)"
+
+            tmp="$(mktemp)"
+            {
+              printf '%s\n\n' "$body"
+              echo "<!-- ticket-source:inbox:$name -->"
+            } > "$tmp"
+
+            IFS=',' read -r -a label_args <<< "$extra"
+            create_args=(issue create --title "$title" --body-file "$tmp")
+            for label in "${label_args[@]}"; do
+              gh label create "$label" --color CCCCCC --force >/dev/null 2>&1 || true
+              create_args+=(--label "$label")
+            done
+
+            url="$(gh "${create_args[@]}")"
+            number="${url##*/}"
+            echo "opened #$number from $file"
+
+            node .github/scripts/ticket-lib.mjs stamp-inbox "$file" "$number" "$url"
+            created=$((created + 1))
+          done
+
+          if [[ "$created" -eq 0 ]]; then
+            echo "No new inbox tickets."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tickets/inbox/*.md
+          git commit -m "Record GitHub issue numbers for inbox tickets"
+          git push

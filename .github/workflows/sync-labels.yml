@@ -1,0 +1,62 @@
+name: Sync ticket labels
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - .github/labels.yml
+      - .github/workflows/sync-labels.yml
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Create missing labels
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 - <<'PY'
+          import json, subprocess, sys
+          from pathlib import Path
+
+          raw = Path(".github/labels.yml").read_text()
+          labels = []
+          current = {}
+          for line in raw.splitlines():
+              stripped = line.strip()
+              if stripped.startswith("#") or not stripped:
+                  continue
+              if stripped.startswith("- name:"):
+                  if current.get("name"):
+                      labels.append(current)
+                  current = {"name": stripped.split(":", 1)[1].strip().strip('"')}
+              elif stripped.startswith("color:"):
+                  current["color"] = stripped.split(":", 1)[1].strip().strip('"')
+              elif stripped.startswith("description:"):
+                  current["description"] = stripped.split(":", 1)[1].strip()
+          if current.get("name"):
+              labels.append(current)
+
+          existing = json.loads(
+              subprocess.check_output(["gh", "label", "list", "--json", "name"], text=True)
+          )
+          have = {item["name"] for item in existing}
+
+          for label in labels:
+              args = [
+                  "gh", "label", "create", label["name"],
+                  "--color", label["color"],
+                  "--description", label.get("description", ""),
+              ]
+              if label["name"] in have:
+                  args.append("--force")
+              subprocess.check_call(args)
+              print(f"synced {label['name']}")
+          PY

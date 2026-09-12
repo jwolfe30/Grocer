@@ -72,4 +72,15 @@ npm run dev
 npm run build
 npm run start
 npm run lint
+npm test
+npm run qa          # lint + ticket tests + production build
 ```
+
+## Tickets
+
+New requests and features are GitHub Issues. Agents close them with a summary,
+what changed, how problems were resolved, and QA verification.
+
+- Open a ticket: [issue forms](https://github.com/jwolfe30/Grocer/issues/new/choose) or `scripts/new-ticket.sh feature "Title"`
+- Workflow details: [docs/TICKET_WORKFLOW.md](docs/TICKET_WORKFLOW.md)
+- Agent playbook: [AGENTS.md](AGENTS.md)
