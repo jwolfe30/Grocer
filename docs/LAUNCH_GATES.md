@@ -33,12 +33,22 @@ Last updated with roadmap execution toward **Android then iOS**.
 
 ## Still requires you (cannot finish in-agent)
 
-1. **HTTPS production host** with persistent `data/` — prefer **Fly.io remote builder** from Windows (no local Docker Desktop): `fly auth login` → volume → `fly secrets set` → `fly deploy` ([`DEPLOY.md`](DEPLOY.md)). Docker Compose remains fine if you have Docker. Vercel is ephemeral for SQLite.
+1. **HTTPS production host** with persistent `data/` — prefer **Fly.io remote builder** from Windows (no local Docker Desktop). `flyctl` is installed locally but **this agent shell cannot run interactive `fly auth login`**. In your own terminal:
+
+```powershell
+$env:Path = "$env:USERPROFILE\.fly\bin;$env:Path"
+flyctl auth login
+.\scripts\fly-deploy.ps1
+```
+
+Or set `$env:FLY_API_TOKEN` from https://fly.io/user/personal_access_tokens then run `.\scripts\fly-deploy.ps1`. See [`DEPLOY.md`](DEPLOY.md). Docker Compose remains fine if you have Docker. Vercel is ephemeral for SQLite.
 2. **Play Console** — create app, upload AAB ([prerelease](https://github.com/jwolfe30/Grocer/releases/tag/android-closed-test-1) or `npm run cap:aab`), attach screenshots/assets, Data safety form, roll out internal → production. Optional: wire secrets and run `play-internal` workflow.
 3. **Production Kroger credentials** (`KROGER_ENV=production` + Production Public app keys) on that host.
 4. **Replace** placeholder privacy email / App Links host / `assetlinks` fingerprint after upload key is final.
 5. **Mac + Xcode** for Phase 4 TestFlight (`docs/IOS.md`).
 6. Optional: human in-store trip sign-off (Phase 2 exit).
+
+**Repo:** launch stack is on `origin/master` (`2aa724d`). AAB prerelease: https://github.com/jwolfe30/Grocer/releases/tag/android-closed-test-1
 
 ## Suggested next commands (you)
 

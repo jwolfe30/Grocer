@@ -4,7 +4,7 @@
 #
 # Docs: docs/DEPLOY.md § Fly.io
 
-app = 'grocer'
+app = 'cascadialabs-grocer'
 primary_region = 'sea'
 
 [build]

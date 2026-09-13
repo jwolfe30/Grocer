@@ -1,0 +1,75 @@
+# Deploy Grocer to Fly.io (remote builder). Soft-skips without FLY_API_TOKEN.
+#
+# Repo secret:
+#   FLY_API_TOKEN  — from https://fly.io/user/personal_access_tokens
+#
+# Optional secrets (set on the Fly app after first deploy is fine too):
+#   KROGER_CLIENT_ID, KROGER_CLIENT_SECRET, KROGER_ENV
+#
+# App name must match fly.toml (`cascadialabs-grocer`).
+
+name: fly-deploy
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check Fly token
+        id: token
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          if [ -z "$FLY_API_TOKEN" ]; then
+            echo "::warning::Skipping fly-deploy — missing secret FLY_API_TOKEN"
+            echo "Create a token at https://fly.io/user/personal_access_tokens"
+            echo "Add it as repository secret FLY_API_TOKEN, then re-run this workflow."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Skip notice
+        if: steps.token.outputs.ready != 'true'
+        run: echo "Soft skip — no deploy."
+
+      - uses: actions/checkout@v4
+        if: steps.token.outputs.ready == 'true'
+
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+        if: steps.token.outputs.ready == 'true'
+
+      - name: Ensure volume exists
+        if: steps.token.outputs.ready == 'true'
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          if ! flyctl volumes list -a cascadialabs-grocer --json 2>/dev/null | grep -q grocer_data; then
+            flyctl volumes create grocer_data --region sea --size 1 -a cascadialabs-grocer -y || true
+          fi
+
+      - name: Deploy
+        if: steps.token.outputs.ready == 'true'
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: flyctl deploy --remote-only -a cascadialabs-grocer
+
+      - name: Optional Kroger secrets
+        if: steps.token.outputs.ready == 'true'
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          KROGER_CLIENT_ID: ${{ secrets.KROGER_CLIENT_ID }}
+          KROGER_CLIENT_SECRET: ${{ secrets.KROGER_CLIENT_SECRET }}
+          KROGER_ENV: ${{ secrets.KROGER_ENV }}
+        run: |
+          if [ -n "$KROGER_CLIENT_ID" ] && [ -n "$KROGER_CLIENT_SECRET" ]; then
+            flyctl secrets set -a cascadialabs-grocer \
+              KROGER_CLIENT_ID="$KROGER_CLIENT_ID" \
+              KROGER_CLIENT_SECRET="$KROGER_CLIENT_SECRET" \
+              KROGER_ENV="${KROGER_ENV:-production}"
+          else
+            echo "Kroger secrets not set in GitHub — set later via flyctl secrets set"
+          fi
