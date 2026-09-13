@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Grocer</string>
+    <string name="title_activity_main">Grocer</string>
+    <string name="package_name">com.cascadialabs.grocer</string>
+    <string name="custom_url_scheme">grocer</string>
+    <!-- Replace with production host before Play Store / verified App Links -->
+    <string name="app_link_host">grocer.example.com</string>
+</resources>

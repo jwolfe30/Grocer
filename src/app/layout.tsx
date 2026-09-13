@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Fraunces, Source_Sans_3 } from "next/font/google";
 import "./globals.css";
 
@@ -15,9 +15,16 @@ const body = Source_Sans_3({
 });
 
 export const metadata: Metadata = {
-  title: "Grocer — Cross-shop smarter",
+  title: "Grocer — Fair prices, free to use",
   description:
-    "Build a grocery list, match items across local stores, and optimize for sales, coupons, and locally sourced picks.",
+    "Cross-shop local grocers for sales and coupons. Free forever — no paywall. Save on quality groceries without delivery premiums.",
+};
+
+/** viewport-fit=cover so env(safe-area-inset-*) works in Capacitor / notched devices */
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

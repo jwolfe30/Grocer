@@ -38,3 +38,16 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# durable price cache (SQLite)
+/data/*.sqlite
+/data/*.sqlite-*
+
+# local toolchains (JDK, etc.)
+/.tools/
+
+# Android release signing (never commit)
+*.jks
+*.keystore
+android/keystore/
+android/key.properties

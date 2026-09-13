@@ -1,0 +1,12 @@
+﻿[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.cascadialabs.grocer",
+      "sha256_cert_fingerprints": [
+        "EB:AF:DB:51:75:05:90:A8:6F:47:5D:D2:3B:10:B0:C5:D1:F2:60:4E:D5:DF:7E:2B:DC:C0:48:7E:CE:E1:E3:76"
+      ]
+    }
+  }
+]

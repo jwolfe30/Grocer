@@ -1,0 +1,181 @@
+# Optional Play Console internal-track upload.
+# Soft-skips (exit 0) when signing secrets are unset — same pattern as prices-refresh.yml.
+#
+# Required repository secrets for a signed AAB build:
+#   GROCER_KEYSTORE_BASE64   # base64 of the release .jks / .keystore
+#   GROCER_KEYSTORE_PASSWORD
+#   GROCER_KEY_ALIAS
+#   GROCER_KEY_PASSWORD
+#
+# Optional (upload to Play internal track after build):
+#   PLAY_SERVICE_ACCOUNT_JSON  # Google Play service-account JSON
+#
+# Notes:
+# - ubuntu-latest only (Windows Android CI is fragile for this repo).
+# - Full Capacitor/Android builds can be heavy; prefer local `npm run cap:aab`
+#   when runners flake. You can also upload a prebuilt AAB via workflow_dispatch
+#   input `prebuilt_aab_path` (repo-relative path committed or checked out).
+# - This job does NOT set CAPACITOR_SERVER_URL / run cap:sync — point the
+#   WebView at production HTTPS before building the AAB you upload.
+
+name: play-internal
+
+on:
+  workflow_dispatch:
+    inputs:
+      prebuilt_aab_path:
+        description: "Optional repo-relative path to a prebuilt AAB (skips Gradle build)"
+        required: false
+        default: ""
+      package_name:
+        description: "Play applicationId"
+        required: false
+        default: "com.cascadialabs.grocer"
+
+jobs:
+  # Soft / optional job: missing secrets → warn + exit 0 (do not fail the workflow).
+  internal:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Check signing secrets
+        id: secrets
+        env:
+          GROCER_KEYSTORE_BASE64: ${{ secrets.GROCER_KEYSTORE_BASE64 }}
+          GROCER_KEYSTORE_PASSWORD: ${{ secrets.GROCER_KEYSTORE_PASSWORD }}
+          GROCER_KEY_ALIAS: ${{ secrets.GROCER_KEY_ALIAS }}
+          GROCER_KEY_PASSWORD: ${{ secrets.GROCER_KEY_PASSWORD }}
+          PREBUILT: ${{ github.event.inputs.prebuilt_aab_path }}
+        run: |
+          if [ -n "$PREBUILT" ]; then
+            echo "Using prebuilt AAB path — signing secrets not required for Gradle."
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+            echo "mode=prebuilt" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          missing=
+          [ -z "$GROCER_KEYSTORE_BASE64" ] && missing="${missing} GROCER_KEYSTORE_BASE64"
+          [ -z "$GROCER_KEYSTORE_PASSWORD" ] && missing="${missing} GROCER_KEYSTORE_PASSWORD"
+          [ -z "$GROCER_KEY_ALIAS" ] && missing="${missing} GROCER_KEY_ALIAS"
+          [ -z "$GROCER_KEY_PASSWORD" ] && missing="${missing} GROCER_KEY_PASSWORD"
+          if [ -n "$missing" ]; then
+            echo "::warning::Skipping play-internal — missing secrets:$missing"
+            echo "Configured repository secrets required: GROCER_KEYSTORE_BASE64, GROCER_KEYSTORE_PASSWORD, GROCER_KEY_ALIAS, GROCER_KEY_PASSWORD"
+            echo "Optional for Play upload: PLAY_SERVICE_ACCOUNT_JSON"
+            echo "Or pass workflow_dispatch input prebuilt_aab_path to skip the Gradle build."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "mode=skip" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+            echo "mode=build" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Skip notice
+        if: steps.secrets.outputs.ready != 'true'
+        run: |
+          echo "Workflow completed without build/upload (soft skip)."
+          echo "Add signing secrets (or a prebuilt_aab_path), then re-run via workflow_dispatch."
+
+      - uses: actions/checkout@v4
+        if: steps.secrets.outputs.ready == 'true'
+
+      - name: Use prebuilt AAB
+        if: steps.secrets.outputs.ready == 'true' && steps.secrets.outputs.mode == 'prebuilt'
+        id: prebuilt
+        env:
+          PREBUILT: ${{ github.event.inputs.prebuilt_aab_path }}
+        run: |
+          if [ ! -f "$PREBUILT" ]; then
+            echo "::error::prebuilt_aab_path not found: $PREBUILT"
+            exit 1
+          fi
+          echo "aab_path=$PREBUILT" >> "$GITHUB_OUTPUT"
+          ls -la "$PREBUILT"
+
+      - name: Set up JDK 21
+        if: steps.secrets.outputs.ready == 'true' && steps.secrets.outputs.mode == 'build'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Android SDK
+        if: steps.secrets.outputs.ready == 'true' && steps.secrets.outputs.mode == 'build'
+        uses: android-actions/setup-android@v3
+
+      - name: Decode keystore
+        if: steps.secrets.outputs.ready == 'true' && steps.secrets.outputs.mode == 'build'
+        env:
+          GROCER_KEYSTORE_BASE64: ${{ secrets.GROCER_KEYSTORE_BASE64 }}
+        run: |
+          mkdir -p android/keystore
+          echo "$GROCER_KEYSTORE_BASE64" | base64 -d > android/keystore/grocer-release.jks
+          echo "GROCER_KEYSTORE_PATH=$GITHUB_WORKSPACE/android/keystore/grocer-release.jks" >> "$GITHUB_ENV"
+
+      - name: Build release AAB
+        if: steps.secrets.outputs.ready == 'true' && steps.secrets.outputs.mode == 'build'
+        id: build
+        env:
+          GROCER_KEYSTORE_PASSWORD: ${{ secrets.GROCER_KEYSTORE_PASSWORD }}
+          GROCER_KEY_ALIAS: ${{ secrets.GROCER_KEY_ALIAS }}
+          GROCER_KEY_PASSWORD: ${{ secrets.GROCER_KEY_PASSWORD }}
+        working-directory: android
+        run: |
+          chmod +x ./gradlew
+          ./gradlew bundleRelease --no-daemon
+          AAB="app/build/outputs/bundle/release/app-release.aab"
+          if [ ! -f "$AAB" ]; then
+            echo "::error::AAB missing after bundleRelease: $AAB"
+            exit 1
+          fi
+          echo "aab_path=android/$AAB" >> "$GITHUB_OUTPUT"
+          ls -la "$AAB"
+
+      - name: Resolve AAB path
+        if: steps.secrets.outputs.ready == 'true'
+        id: aab
+        run: |
+          if [ "${{ steps.secrets.outputs.mode }}" = "prebuilt" ]; then
+            echo "path=${{ steps.prebuilt.outputs.aab_path }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "path=${{ steps.build.outputs.aab_path }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Upload AAB artifact
+        if: steps.secrets.outputs.ready == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-aab
+          path: ${{ steps.aab.outputs.path }}
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Check Play upload secret
+        if: steps.secrets.outputs.ready == 'true'
+        id: play
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          if [ -z "$PLAY_SERVICE_ACCOUNT_JSON" ]; then
+            echo "::warning::PLAY_SERVICE_ACCOUNT_JSON unset — AAB artifact uploaded; skipping Play Console upload."
+            echo "upload=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "upload=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Write Play service account JSON
+        if: steps.secrets.outputs.ready == 'true' && steps.play.outputs.upload == 'true'
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          printf '%s' "$PLAY_SERVICE_ACCOUNT_JSON" > "$RUNNER_TEMP/play-sa.json"
+
+      - name: Upload to Play internal track
+        if: steps.secrets.outputs.ready == 'true' && steps.play.outputs.upload == 'true'
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJson: ${{ runner.temp }}/play-sa.json
+          packageName: ${{ github.event.inputs.package_name }}
+          releaseFiles: ${{ steps.aab.outputs.path }}
+          track: internal
+          status: draft

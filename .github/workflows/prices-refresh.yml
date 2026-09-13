@@ -1,0 +1,91 @@
+# Daily Kroger price-cache warm. Soft-skips when secrets are unset.
+#
+# Required repository secrets (Settings → Secrets and variables → Actions):
+#   KROGER_CLIENT_ID
+#   KROGER_CLIENT_SECRET
+#   KROGER_ENV              # certification | production
+#
+# Optional:
+#   KROGER_LOCATION_ID
+#   KROGER_ZIP
+#   PRICE_CACHE_MAX_AGE_HOURS
+#
+# Note: This job warms SQLite on the GitHub runner and uploads data/prices.sqlite
+# as an artifact. It does NOT update a self-hosted app's local data/prices.sqlite.
+# For the machine that serves Grocer, schedule `npm run prices:refresh` there
+# (see README → Production launch checklist / Windows Task Scheduler).
+
+name: prices-refresh
+
+on:
+  schedule:
+    # ~06:00 US Pacific (14:00 UTC); adjust if you prefer another window
+    - cron: "0 14 * * *"
+  workflow_dispatch:
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check Kroger secrets
+        id: secrets
+        env:
+          KROGER_CLIENT_ID: ${{ secrets.KROGER_CLIENT_ID }}
+          KROGER_CLIENT_SECRET: ${{ secrets.KROGER_CLIENT_SECRET }}
+          KROGER_ENV: ${{ secrets.KROGER_ENV }}
+        run: |
+          missing=
+          [ -z "$KROGER_CLIENT_ID" ] && missing="${missing} KROGER_CLIENT_ID"
+          [ -z "$KROGER_CLIENT_SECRET" ] && missing="${missing} KROGER_CLIENT_SECRET"
+          [ -z "$KROGER_ENV" ] && missing="${missing} KROGER_ENV"
+          if [ -n "$missing" ]; then
+            echo "::warning::Skipping prices:refresh — missing secrets:$missing"
+            echo "Configured repository secrets required: KROGER_CLIENT_ID, KROGER_CLIENT_SECRET, KROGER_ENV"
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Skip notice
+        if: steps.secrets.outputs.ready != 'true'
+        run: |
+          echo "Workflow completed without refresh (soft skip)."
+          echo "Add the secrets above, then re-run via workflow_dispatch or wait for the daily schedule."
+
+      - uses: actions/checkout@v4
+        if: steps.secrets.outputs.ready == 'true'
+
+      - uses: actions/setup-node@v4
+        if: steps.secrets.outputs.ready == 'true'
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        if: steps.secrets.outputs.ready == 'true'
+        run: npm ci
+
+      - name: Warm price cache
+        if: steps.secrets.outputs.ready == 'true'
+        env:
+          KROGER_CLIENT_ID: ${{ secrets.KROGER_CLIENT_ID }}
+          KROGER_CLIENT_SECRET: ${{ secrets.KROGER_CLIENT_SECRET }}
+          KROGER_ENV: ${{ secrets.KROGER_ENV }}
+          KROGER_LOCATION_ID: ${{ secrets.KROGER_LOCATION_ID }}
+          KROGER_ZIP: ${{ secrets.KROGER_ZIP }}
+          PRICE_CACHE_MAX_AGE_HOURS: ${{ secrets.PRICE_CACHE_MAX_AGE_HOURS }}
+        run: npm run prices:refresh
+
+      - name: Cache freshness check
+        if: steps.secrets.outputs.ready == 'true'
+        run: npm run prices:refresh:check
+
+      - name: Upload prices.sqlite artifact
+        if: steps.secrets.outputs.ready == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: prices-sqlite
+          path: data/prices.sqlite
+          if-no-files-found: warn
+          retention-days: 7

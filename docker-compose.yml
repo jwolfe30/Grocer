@@ -1,0 +1,22 @@
+# Preferred v1 host: long-lived Node + persistent SQLite under ./data
+# Secrets: use .env.local (gitignored) or export env before `docker compose up`.
+# Do not commit secrets. No image registry push required.
+
+services:
+  grocer:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/app/data
+    env_file:
+      - path: .env.local
+        required: false
+    environment:
+      NODE_ENV: production
+      HOSTNAME: "0.0.0.0"
+      PORT: "3000"
+      # Defaults match host paths inside the container (volume-mounted)
+      APP_DB_PATH: data/app.sqlite
+      PRICE_CACHE_PATH: data/prices.sqlite
+    restart: unless-stopped

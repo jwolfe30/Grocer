@@ -18,13 +18,22 @@ export async function POST(
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
-  if (parsed.data.preferLocal != null) {
-    list = updateList(id, { preferLocal: parsed.data.preferLocal }) ?? list;
+  const patch: {
+    preferLocal?: boolean;
+    preferOrganic?: boolean;
+    preferKosher?: boolean;
+  } = {};
+  if (parsed.data.preferLocal != null) patch.preferLocal = parsed.data.preferLocal;
+  if (parsed.data.preferOrganic != null) patch.preferOrganic = parsed.data.preferOrganic;
+  if (parsed.data.preferKosher != null) patch.preferKosher = parsed.data.preferKosher;
+  if (Object.keys(patch).length) {
+    list = updateList(id, patch) ?? list;
   }
 
   const { stores, offers, coupons } = await getOffersForOptimize(
     list.zip,
     list.items.map((i) => i.query),
+    { storeIds: parsed.data.storeIds },
   );
   const matches = matchListItems(
     list,

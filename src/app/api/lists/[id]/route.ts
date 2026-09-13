@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { getList, updateList } from "@/lib/list-store";
+import { getList, upsertList } from "@/lib/list-store";
 import { updateListSchema } from "@/lib/schemas";
+import { parseBearer, userFromToken } from "@/lib/user-store";
 
 export async function GET(
   _request: Request,
@@ -9,7 +10,10 @@ export async function GET(
   const { id } = await context.params;
   const list = getList(id);
   if (!list) return NextResponse.json({ error: "List not found" }, { status: 404 });
-  return NextResponse.json({ list });
+  return NextResponse.json({
+    list,
+    sync: list.userId ? ("cloud" as const) : ("device" as const),
+  });
 }
 
 export async function PATCH(
@@ -22,7 +26,13 @@ export async function PATCH(
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
-  const list = updateList(id, parsed.data);
-  if (!list) return NextResponse.json({ error: "List not found" }, { status: 404 });
-  return NextResponse.json({ list });
+  const user = userFromToken(parseBearer(request));
+  const list = upsertList(id, {
+    ...parsed.data,
+    ...(user ? { userId: user.id } : {}),
+  });
+  return NextResponse.json({
+    list,
+    sync: list.userId ? ("cloud" as const) : ("device" as const),
+  });
 }

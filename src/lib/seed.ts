@@ -1,38 +1,10 @@
 import type { Coupon, Offer, Store } from "./types";
+import { AREA_STORES } from "./area-stores";
 
-export const SEED_STORES: Store[] = [
-  {
-    id: "green-valley",
-    name: "Green Valley Market",
-    address: "214 SE Hawthorne Blvd",
-    zip: "97214",
-    lat: 45.512,
-    lng: -122.659,
-    source: "seed",
-  },
-  {
-    id: "harbor-fresh",
-    name: "Harbor Fresh Co-op",
-    address: "880 NW 23rd Ave",
-    zip: "97210",
-    lat: 45.529,
-    lng: -122.698,
-    source: "seed",
-  },
-  {
-    id: "kroger-demo",
-    name: "Kroger (demo mirror)",
-    chain: "Kroger",
-    address: "3300 SE Division St",
-    zip: "97202",
-    lat: 45.504,
-    lng: -122.632,
-    source: "seed",
-  },
-];
+export const SEED_STORES: Store[] = AREA_STORES;
 
 /** Canonical grocery intents the matcher understands well in demo mode */
-export const SEED_OFFERS: Offer[] = [
+const SEED_OFFERS_BASE: Offer[] = [
   // Milk
   {
     id: "gv-milk-gal",
@@ -180,6 +152,23 @@ export const SEED_OFFERS: Offer[] = [
     isLocal: false,
     onSale: false,
     couponIds: ["kr-bakery-1"],
+  },
+  {
+    id: "gv-bread-ad",
+    storeId: "green-valley",
+    productId: "bread-wheat",
+    name: "Sunrise Grain Honey Wheat",
+    brand: "Sunrise Grain",
+    category: "bakery",
+    sizeLabel: "24 oz",
+    priceUsd: 4.99,
+    unitAmount: 24,
+    unitName: "oz",
+    isLocal: false,
+    onSale: true,
+    salePriceUsd: 3.79,
+    couponIds: [],
+    priceSource: "ad",
   },
   // Bananas
   {
@@ -370,6 +359,7 @@ export const SEED_OFFERS: Offer[] = [
     isLocal: false,
     onSale: false,
     couponIds: [],
+    priceSource: "ad",
   },
   // Olive oil
   {
@@ -419,7 +409,322 @@ export const SEED_OFFERS: Offer[] = [
     onSale: false,
     couponIds: [],
   },
+  // Extra intents so common list items aren't dropped from plans
+  {
+    id: "kr-yogurt",
+    storeId: "kroger-demo",
+    productId: "yogurt",
+    name: "Kroger Plain Yogurt",
+    brand: "Kroger",
+    category: "dairy",
+    sizeLabel: "32 oz",
+    priceUsd: 3.49,
+    unitAmount: 32,
+    unitName: "oz",
+    isLocal: false,
+    onSale: false,
+    couponIds: [],
+  },
+  {
+    id: "kr-cheddar",
+    storeId: "kroger-demo",
+    productId: "cheddar-cheese",
+    name: "Kroger Sharp Cheddar",
+    brand: "Kroger",
+    category: "dairy",
+    sizeLabel: "8 oz",
+    priceUsd: 3.29,
+    unitAmount: 8,
+    unitName: "oz",
+    isLocal: false,
+    onSale: true,
+    salePriceUsd: 2.79,
+    couponIds: [],
+  },
+  {
+    id: "kr-tomatoes",
+    storeId: "kroger-demo",
+    productId: "tomatoes",
+    name: "Roma Tomatoes",
+    brand: "Produce",
+    category: "produce",
+    sizeLabel: "1 lb",
+    priceUsd: 1.99,
+    unitAmount: 1,
+    unitName: "lb",
+    isLocal: false,
+    onSale: false,
+    couponIds: [],
+  },
+  {
+    id: "kr-oatmeal",
+    storeId: "kroger-demo",
+    productId: "oatmeal",
+    name: "Kroger Old Fashioned Oats",
+    brand: "Kroger",
+    category: "pantry",
+    sizeLabel: "42 oz",
+    priceUsd: 4.49,
+    unitAmount: 42,
+    unitName: "oz",
+    isLocal: false,
+    onSale: false,
+    couponIds: [],
+  },
+  {
+    id: "kr-paper-towels",
+    storeId: "kroger-demo",
+    productId: "paper-towels",
+    name: "Kroger Paper Towels",
+    brand: "Kroger",
+    category: "household",
+    sizeLabel: "6 rolls",
+    priceUsd: 8.99,
+    unitAmount: 6,
+    unitName: "ct",
+    isLocal: false,
+    onSale: false,
+    couponIds: [],
+  },
+  {
+    id: "kr-salsa",
+    storeId: "kroger-demo",
+    productId: "salsa",
+    name: "Kroger Medium Salsa",
+    brand: "Kroger",
+    category: "pantry",
+    sizeLabel: "16 oz",
+    priceUsd: 2.49,
+    unitAmount: 16,
+    unitName: "oz",
+    isLocal: false,
+    onSale: false,
+    couponIds: [],
+  },
+  {
+    id: "kr-garlic",
+    storeId: "kroger-demo",
+    productId: "garlic",
+    name: "Fresh Garlic",
+    brand: "Produce",
+    category: "produce",
+    sizeLabel: "1 bulb",
+    priceUsd: 0.69,
+    unitAmount: 1,
+    unitName: "each",
+    isLocal: false,
+    onSale: false,
+    couponIds: [],
+  },
+  {
+    id: "kr-sugar",
+    storeId: "kroger-demo",
+    productId: "sugar",
+    name: "Kroger Granulated Sugar",
+    brand: "Kroger",
+    category: "pantry",
+    sizeLabel: "4 lb",
+    priceUsd: 3.99,
+    unitAmount: 4,
+    unitName: "lb",
+    isLocal: false,
+    onSale: false,
+    couponIds: [],
+  },
+  {
+    id: "kr-flour",
+    storeId: "kroger-demo",
+    productId: "flour",
+    name: "Kroger All-Purpose Flour",
+    brand: "Kroger",
+    category: "pantry",
+    sizeLabel: "5 lb",
+    priceUsd: 2.99,
+    unitAmount: 5,
+    unitName: "lb",
+    isLocal: false,
+    onSale: false,
+    couponIds: [],
+  },
+  {
+    id: "kr-ground-beef",
+    storeId: "kroger-demo",
+    productId: "ground-beef",
+    name: "Kroger Ground Beef 80/20",
+    brand: "Kroger",
+    category: "meat",
+    sizeLabel: "1 lb",
+    priceUsd: 5.49,
+    unitAmount: 1,
+    unitName: "lb",
+    isLocal: false,
+    onSale: true,
+    salePriceUsd: 4.99,
+    couponIds: [],
+  },
+  {
+    id: "kr-black-beans",
+    storeId: "kroger-demo",
+    productId: "black-beans",
+    name: "Kroger Black Beans",
+    brand: "Kroger",
+    category: "pantry",
+    sizeLabel: "15 oz",
+    priceUsd: 1.19,
+    unitAmount: 15,
+    unitName: "oz",
+    isLocal: false,
+    onSale: false,
+    couponIds: [],
+  },
 ];
+
+const OFFER_TRAITS: Record<
+  string,
+  Partial<Pick<Offer, "isOrganic" | "isNonGmo" | "isKosher">>
+> = {
+  "hf-milk-gal": { isOrganic: true, isNonGmo: true, isKosher: true },
+  "gv-milk-gal": { isNonGmo: true, isKosher: true },
+  "kr-milk-gal": { isKosher: true },
+  "gv-eggs-12": { isNonGmo: true },
+  "hf-eggs-12": { isOrganic: true, isNonGmo: true, isKosher: true },
+  "kr-eggs-12": { isNonGmo: true },
+  "gv-bread": { isNonGmo: true },
+  "hf-bread": { isOrganic: true, isNonGmo: true },
+  "gv-bananas": { isOrganic: true, isNonGmo: true },
+  "hf-bananas": { isOrganic: true, isNonGmo: true },
+  "hf-chicken": { isOrganic: true, isNonGmo: true, isKosher: true },
+  "gv-chicken": { isNonGmo: true, isKosher: true },
+  "hf-rice": { isOrganic: true, isNonGmo: true, isKosher: true },
+  "kr-rice": { isKosher: true },
+  "gv-coffee": { isOrganic: true, isNonGmo: true },
+  "hf-coffee": { isOrganic: true, isNonGmo: true },
+  "gv-oil": { isOrganic: true, isNonGmo: true, isKosher: true },
+  "hf-oil": { isOrganic: true, isNonGmo: true, isKosher: true },
+  "kr-oil": { isKosher: true },
+};
+
+export const SEED_OFFERS: Offer[] = (() => {
+  const coop = SEED_OFFERS_BASE.filter((o) => o.storeId !== "kroger-demo").map(
+    applyTraits,
+  );
+  const templates = SEED_OFFERS_BASE.filter((o) => o.storeId === "kroger-demo");
+
+  type CloneTarget = {
+    storeId: string;
+    prefix: string;
+    /** Multiplier vs Kroger template shelf price */
+    mul: number;
+    brand?: string;
+    rename?: (name: string) => string;
+  };
+
+  const targets: CloneTarget[] = [
+    { storeId: "kroger-70100053", prefix: "fm53", mul: 1.0 },
+    { storeId: "kroger-70100215", prefix: "fm215", mul: 1.01 },
+    { storeId: "kroger-70100031", prefix: "fm31", mul: 1.02 },
+    { storeId: "kroger-70100019", prefix: "fm19", mul: 0.99 },
+    { storeId: "kroger-70100682", prefix: "fm682", mul: 1.015 },
+    {
+      storeId: "qfc-70500803",
+      prefix: "qfc803",
+      mul: 1.04,
+      rename: (n) => n.replace(/^Kroger\b/i, "QFC").replace(/^Private Selection\b/i, "QFC"),
+    },
+    {
+      storeId: "qfc-70500837",
+      prefix: "qfc837",
+      mul: 1.045,
+      rename: (n) => n.replace(/^Kroger\b/i, "QFC").replace(/^Private Selection\b/i, "QFC"),
+    },
+    {
+      storeId: "qfc-70500871",
+      prefix: "qfc871",
+      mul: 1.035,
+      rename: (n) => n.replace(/^Kroger\b/i, "QFC").replace(/^Private Selection\b/i, "QFC"),
+    },
+    {
+      storeId: "qfc-70500840",
+      prefix: "qfc840",
+      mul: 1.05,
+      rename: (n) => n.replace(/^Kroger\b/i, "QFC").replace(/^Private Selection\b/i, "QFC"),
+    },
+    {
+      storeId: "safeway-covington",
+      prefix: "sw",
+      mul: 1.08,
+      brand: "Lucerne",
+      rename: (n) =>
+        n
+          .replace(/^Kroger\b/i, "Lucerne")
+          .replace(/^Simple Truth\b/i, "O Organics")
+          .replace(/^Private Selection\b/i, "Signature SELECT"),
+    },
+    {
+      storeId: "albertsons-kent",
+      prefix: "ab",
+      mul: 1.07,
+      brand: "Signature",
+      rename: (n) =>
+        n
+          .replace(/^Kroger\b/i, "Signature")
+          .replace(/^Simple Truth\b/i, "O Organics")
+          .replace(/^Private Selection\b/i, "Signature SELECT"),
+    },
+    {
+      storeId: "costco-kent",
+      prefix: "cs",
+      mul: 0.88,
+      brand: "Kirkland",
+      rename: (n) =>
+        n
+          .replace(/^Kroger\b/i, "Kirkland Signature")
+          .replace(/^Simple Truth\b/i, "Kirkland Signature")
+          .replace(/^Private Selection\b/i, "Kirkland Signature"),
+    },
+  ];
+
+  const cloned: Offer[] = [];
+  for (const t of targets) {
+    for (const o of templates) {
+      const priceUsd = Math.round(o.priceUsd * t.mul * 100) / 100;
+      const salePriceUsd =
+        o.salePriceUsd != null
+          ? Math.round(o.salePriceUsd * t.mul * 100) / 100
+          : undefined;
+      const name = t.rename ? t.rename(o.name) : o.name;
+      cloned.push(
+        applyTraits({
+          ...o,
+          id: `${t.prefix}-${o.id.replace(/^kr-/, "")}`,
+          storeId: t.storeId,
+          name,
+          brand: t.brand ?? o.brand,
+          priceUsd,
+          salePriceUsd,
+          couponIds: [],
+          priceSource: "modeled",
+        }),
+      );
+    }
+  }
+
+  return [...coop, ...cloned];
+})();
+
+function applyTraits(offer: Offer): Offer {
+  const templateKey = offer.id.startsWith("kr-")
+    ? offer.id
+    : `kr-${offer.id.replace(/^[a-z]+\d*-/, "")}`;
+  const traits = OFFER_TRAITS[offer.id] ?? OFFER_TRAITS[templateKey] ?? {};
+  const organicFromName = /organic/i.test(offer.name);
+  return {
+    ...offer,
+    isOrganic: traits.isOrganic ?? organicFromName,
+    isNonGmo: traits.isNonGmo ?? organicFromName,
+    isKosher: traits.isKosher ?? false,
+  };
+}
 
 export const SEED_COUPONS: Coupon[] = [
   {
@@ -448,7 +753,7 @@ export const SEED_COUPONS: Coupon[] = [
   {
     id: "kr-milk-clip",
     storeId: "kroger-demo",
-    title: "$1 off gallon milk digital coupon",
+    title: "$1 off gallon milk",
     amountOffUsd: 1,
     productIds: ["milk-gallon"],
     expiresAt: "2026-12-31",
@@ -456,6 +761,22 @@ export const SEED_COUPONS: Coupon[] = [
   {
     id: "kr-bakery-1",
     storeId: "kroger-demo",
+    title: "$1 off bakery bread",
+    amountOffUsd: 1,
+    categories: ["bakery"],
+    expiresAt: "2026-12-31",
+  },
+  {
+    id: "sw-milk-clip",
+    storeId: "safeway-covington",
+    title: "$1 off gallon milk",
+    amountOffUsd: 1,
+    productIds: ["milk-gallon"],
+    expiresAt: "2026-12-31",
+  },
+  {
+    id: "ab-bakery-1",
+    storeId: "albertsons-kent",
     title: "$1 off bakery bread",
     amountOffUsd: 1,
     categories: ["bakery"],

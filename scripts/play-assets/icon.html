@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Grocer Play icon</title>
+    <style>
+      :root {
+        --bg: #f3f6f1;
+        --bg-deep: #e4ebe0;
+        --ink: #14201a;
+        --leaf: #1f6b45;
+        --leaf-deep: #134a2f;
+        --accent: #c45c26;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html,
+      body {
+        width: 512px;
+        height: 512px;
+        overflow: hidden;
+        background: transparent;
+      }
+      .icon {
+        width: 512px;
+        height: 512px;
+        position: relative;
+        background:
+          radial-gradient(ellipse 90% 70% at 30% 18%, #f7faf5 0%, transparent 55%),
+          radial-gradient(ellipse 70% 60% at 78% 82%, rgba(196, 92, 38, 0.12) 0%, transparent 50%),
+          linear-gradient(155deg, var(--bg) 0%, var(--bg-deep) 48%, #d5e2d4 100%);
+      }
+      /* Soft produce-aisle texture */
+      .icon::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(circle at 18% 72%, rgba(31, 107, 69, 0.07) 0 18%, transparent 19%),
+          radial-gradient(circle at 82% 28%, rgba(31, 107, 69, 0.06) 0 14%, transparent 15%);
+        pointer-events: none;
+      }
+      .mark {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+      }
+      .badge {
+        width: 340px;
+        height: 340px;
+        border-radius: 84px;
+        background: linear-gradient(160deg, var(--leaf) 0%, var(--leaf-deep) 100%);
+        box-shadow:
+          0 28px 48px rgba(20, 32, 26, 0.18),
+          inset 0 1px 0 rgba(255, 255, 255, 0.18);
+        display: grid;
+        place-items: center;
+        position: relative;
+        overflow: hidden;
+      }
+      .badge::after {
+        content: "";
+        position: absolute;
+        width: 220px;
+        height: 220px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(243, 246, 241, 0.16) 0%, transparent 70%);
+        top: -40px;
+        left: -30px;
+      }
+      .glyph {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        place-items: center;
+      }
+      .leaf-svg {
+        width: 168px;
+        height: 168px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="icon" id="capture">
+      <div class="mark">
+        <div class="badge">
+          <div class="glyph">
+            <!-- Simple leaf mark: grocery / produce, not generic AI orb -->
+            <svg class="leaf-svg" viewBox="0 0 120 120" aria-hidden="true">
+              <path
+                fill="#f3f6f1"
+                d="M98 22c-28 4-52 22-64 48-4 9-6 18-6 28 14-2 28-8 38-18 18-18 30-40 32-58z"
+                opacity="0.95"
+              />
+              <path
+                fill="none"
+                stroke="#134a2f"
+                stroke-width="5"
+                stroke-linecap="round"
+                d="M34 96c18-22 38-38 64-48"
+                opacity="0.45"
+              />
+              <path
+                fill="#c45c26"
+                d="M28 98c2-10 8-18 16-24-4 14-2 24 2 34-8-2-14-6-18-10z"
+              />
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

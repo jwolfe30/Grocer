@@ -12,8 +12,95 @@
   --line: #c9d5cc;
   --sale: #0f7a4a;
   --warn: #9a3412;
+  --local: #1d4ed8;
   --font-display: "Fraunces", Georgia, serif;
   --font-body: "Source Sans 3", "Segoe UI", sans-serif;
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-right: env(safe-area-inset-right, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-left: env(safe-area-inset-left, 0px);
+}
+
+@keyframes grocer-item-swipe {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-120%);
+    opacity: 0;
+  }
+}
+
+@keyframes grocer-item-shrink {
+  from {
+    max-height: 6rem;
+    opacity: 0;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom-width: 1px;
+  }
+  to {
+    max-height: 0;
+    opacity: 0;
+    margin-bottom: 0;
+    padding-bottom: 0;
+    padding-top: 0;
+    border-bottom-width: 0;
+  }
+}
+
+.grocer-item-swipe {
+  animation: grocer-item-swipe 280ms ease-in forwards;
+}
+
+.grocer-item-shrink {
+  overflow: hidden;
+  animation: grocer-item-shrink 160ms ease-in forwards;
+}
+
+@keyframes grocer-item-materialize {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+    max-height: 0;
+    padding-bottom: 0;
+    margin-bottom: 0;
+    border-bottom-width: 0;
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    max-height: 6rem;
+    padding-bottom: 0.75rem;
+    margin-bottom: 0;
+    border-bottom-width: 1px;
+  }
+}
+
+.grocer-item-materialize {
+  overflow: hidden;
+  animation: grocer-item-materialize 340ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes grocer-opt-shimmer {
+  from {
+    background-position: 0% 0;
+  }
+  to {
+    background-position: 200% 0;
+  }
+}
+
+.grocer-opt-bar {
+  background-image: linear-gradient(
+    90deg,
+    var(--leaf) 0%,
+    var(--leaf-deep) 40%,
+    var(--leaf) 80%
+  );
+  background-size: 200% 100%;
+  animation: grocer-opt-shimmer 1.4s linear infinite;
 }
 
 @theme inline {
@@ -41,6 +128,16 @@ body {
 
 body {
   min-height: 100vh;
+  min-height: 100dvh;
+  /* Sides + home indicator; top inset is applied on sticky chrome (see .grocer-safe-sticky) */
+  padding-right: var(--safe-area-right);
+  padding-bottom: var(--safe-area-bottom);
+  padding-left: var(--safe-area-left);
+}
+
+/* Sticky shop chrome clears notches when stuck to the top of the viewport */
+.grocer-safe-sticky {
+  padding-top: max(0.75rem, var(--safe-area-top));
 }
 
 a {

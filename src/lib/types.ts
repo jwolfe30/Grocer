@@ -8,7 +8,9 @@ export interface Store {
   zip: string;
   lat: number;
   lng: number;
-  source: "seed" | "kroger";
+  source: "seed" | "kroger" | "crowd" | "demo";
+  /** Kroger Public API locationId (division + store), when this row is a Kroger banner. */
+  krogerLocationId?: string;
 }
 
 export interface Offer {
@@ -27,9 +29,21 @@ export interface Offer {
   upc?: string;
   isLocal: boolean;
   localOrigin?: string;
+  isOrganic?: boolean;
+  isNonGmo?: boolean;
+  isKosher?: boolean;
   onSale: boolean;
   salePriceUsd?: number;
   couponIds: string[];
+  /** Provenance for honest UI labeling */
+  priceSource?: "live" | "demo" | "crowd" | "ad" | "modeled";
+  asOf?: string;
+  /** Optional “cheaper vs 30-day median” badge (live/cache only). */
+  dealSignal?: {
+    pctBelowMedian: number;
+    medianUsd: number;
+    currentUsd: number;
+  } | null;
 }
 
 export interface Coupon {
@@ -52,20 +66,59 @@ export interface ListItem {
   query: string;
   quantity: number;
   notes?: string;
-  /** Locked offer after user picks a match */
+  /** Hard-locked offer (from matches panel) */
   selectedOfferId?: string;
+  /** Canonical grocery intent (e.g. bread-wheat) */
   preferredProductId?: string;
+  /** Soft brand preference from autocomplete brand pick */
+  preferredBrand?: string;
+  /** Crossed off while shopping */
+  checked?: boolean;
 }
 
-export interface GroceryList {
+export interface DietPreferences {
+  preferLocal: boolean;
+  /** Prefer USDA organic or clearly non-GMO labeled items */
+  preferOrganic: boolean;
+  preferKosher: boolean;
+}
+
+export interface GroceryList extends DietPreferences {
   id: string;
   name: string;
   zip: string;
   items: ListItem[];
-  preferLocal: boolean;
   savingsThresholdUsd: number;
+  /** Set when the list is owned by a signed-in account (syncs across devices). */
+  userId?: string | null;
+  /** Public share slug — anyone with the link can open the list (check-off only). */
+  shareId?: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface Suggestion {
+  offerId: string;
+  productId: string;
+  name: string;
+  brand?: string;
+  /** Generic intent row vs a specific branded SKU */
+  kind: "generic" | "brand";
+  storeId: string;
+  storeName: string;
+  sizeLabel: string;
+  listPriceUsd: number;
+  effectivePriceUsd: number;
+  onSale: boolean;
+  isLocal: boolean;
+  localOrigin?: string;
+  isOrganic: boolean;
+  isNonGmo: boolean;
+  isKosher: boolean;
+  appliedCouponIds: string[];
+  score: number;
+  priceSource?: "live" | "demo" | "crowd" | "ad" | "modeled";
+  asOf?: string;
 }
 
 export interface MatchedOffer {
@@ -83,6 +136,18 @@ export interface ItemMatchResult {
   quantity: number;
   matches: MatchedOffer[];
   selectedOfferId?: string;
+  preferredBrand?: string;
+  preferredProductId?: string;
+}
+
+export interface PlanLineReplacement {
+  offer: Offer;
+  storeId: StoreId;
+  storeName: string;
+  unitPriceUsd: number;
+  lineTotalUsd: number;
+  savingsUsd: number;
+  reason: string;
 }
 
 export interface PlanLine {
@@ -96,6 +161,10 @@ export interface PlanLine {
   lineTotalUsd: number;
   appliedCouponIds: string[];
   isLocal: boolean;
+  /** True when this line honors a brand the shopper picked */
+  brandPreferred?: boolean;
+  /** Cheaper/better alternate when the plan kept a preferred or locked pick */
+  recommendedReplacement?: PlanLineReplacement;
 }
 
 export interface CartPlan {

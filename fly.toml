@@ -1,0 +1,36 @@
+# Grocer — Fly.io app config (no secrets).
+# Pair with Dockerfile + persistent volume at /app/data for SQLite.
+# Replace `app` name after `fly launch` / `fly apps create` if needed.
+#
+# Docs: docs/DEPLOY.md § Fly.io
+
+app = 'grocer'
+primary_region = 'sea'
+
+[build]
+  dockerfile = 'Dockerfile'
+
+[env]
+  NODE_ENV = 'production'
+  HOSTNAME = '0.0.0.0'
+  PORT = '3000'
+  # Absolute paths on the mounted volume (see [[mounts]])
+  APP_DB_PATH = '/app/data/app.sqlite'
+  PRICE_CACHE_PATH = '/app/data/prices.sqlite'
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ['app']
+
+[[mounts]]
+  source = 'grocer_data'
+  destination = '/app/data'
+
+[[vm]]
+  memory = '512mb'
+  cpu_kind = 'shared'
+  cpus = 1

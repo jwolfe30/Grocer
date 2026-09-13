@@ -6,23 +6,44 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "kroger:probe": "node scripts/kroger-probe.mjs",
+    "qa:smoke": "node scripts/qa-smoke.mjs",
+    "qa:launch": "node scripts/qa-launch-check.mjs",
+    "prices:refresh": "tsx scripts/prices-refresh.ts",
+    "prices:stats": "tsx scripts/prices-stats.ts",
+    "prices:refresh:check": "tsx scripts/prices-stats.ts --check",
+    "cap:sync": "npx cap sync",
+    "cap:sync:android": "npx cap sync android",
+    "cap:sync:ios": "npx cap sync ios",
+    "cap:android": "npx cap run android",
+    "cap:open:android": "npx cap open android",
+    "cap:open:ios": "npx cap open ios",
+    "cap:aab": "cd android && gradlew.bat bundleRelease",
+    "play:assets": "node scripts/generate-play-assets.mjs"
   },
   "dependencies": {
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/core": "^8.5.2",
+    "@capacitor/ios": "^8.5.2",
+    "better-sqlite3": "^13.0.3",
     "next": "^15.5.2",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "zod": "^4.1.5"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.5.2",
     "@eslint/eslintrc": "^3.3.1",
     "@tailwindcss/postcss": "^4.1.13",
+    "@types/better-sqlite3": "^9.6.0",
     "@types/node": "^20.19.13",
     "@types/react": "^19.1.12",
     "@types/react-dom": "^19.1.9",
     "eslint": "^9.35.0",
     "eslint-config-next": "^15.5.2",
     "tailwindcss": "^4.1.13",
+    "tsx": "^4.23.13",
     "typescript": "^5.9.2"
   }
 }
