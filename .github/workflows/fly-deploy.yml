@@ -42,6 +42,18 @@ jobs:
       - uses: superfly/flyctl-actions/setup-flyctl@master
         if: steps.token.outputs.ready == 'true'
 
+      - name: Ensure app exists
+        if: steps.token.outputs.ready == 'true'
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          if ! flyctl apps list --json 2>/dev/null | grep -q '"Name":"cascadialabs-grocer"'; then
+            echo "Creating app cascadialabs-grocer ..."
+            flyctl apps create cascadialabs-grocer --org personal || flyctl apps create cascadialabs-grocer
+          else
+            echo "App cascadialabs-grocer already exists"
+          fi
+
       - name: Ensure volume exists
         if: steps.token.outputs.ready == 'true'
         env:
@@ -73,3 +85,18 @@ jobs:
           else
             echo "Kroger secrets not set in GitHub — set later via flyctl secrets set"
           fi
+
+      - name: Smoke HTTPS
+        if: steps.token.outputs.ready == 'true'
+        run: |
+          set -e
+          for i in 1 2 3 4 5 6; do
+            code=$(curl -sS -o /dev/null -w "%{http_code}" https://cascadialabs-grocer.fly.dev/ || true)
+            echo "attempt $i → HTTP $code"
+            if [ "$code" = "200" ] || [ "$code" = "304" ]; then
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "::warning::Deploy finished but HTTPS smoke did not return 200 yet — check Fly dashboard"
+          exit 0

@@ -9,6 +9,9 @@
 #
 # Usage (from repo root):
 #   .\scripts\unlock-fly.ps1
+#
+# After deploy, set live Kroger on Fly yourself (values stay local):
+#   flyctl secrets set -a cascadialabs-grocer KROGER_ENV=production KROGER_CLIENT_ID=... KROGER_CLIENT_SECRET=...
 
 $ErrorActionPreference = "Stop"
 $env:Path = "$env:USERPROFILE\.fly\bin;$env:LOCALAPPDATA\Programs\gh;$env:Path"
@@ -22,7 +25,7 @@ if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
 Write-Host ""
 Write-Host "=== Grocer Fly unlock ==="
 Write-Host "1. Sign in to Fly if needed, create a personal access token."
-Write-Host "2. Paste the token below (it is sent only to GitHub as a repo secret)."
+Write-Host "2. Paste the token below (stored only as GitHub Actions secret FLY_API_TOKEN)."
 Write-Host ""
 
 Start-Process "https://fly.io/user/personal_access_tokens"
@@ -63,11 +66,12 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host ""
 Write-Host "Deploy workflow finished. Verify:"
 Write-Host "  https://cascadialabs-grocer.fly.dev/"
+Write-Host "  https://cascadialabs-grocer.fly.dev/privacy"
 Write-Host ""
 Write-Host "Next (Android HTTPS AAB):"
 Write-Host "  . .\scripts\android-env.ps1"
 Write-Host "  .\scripts\launch-android.ps1 -SkipDeploy"
 Write-Host "Then upload android\app\build\outputs\bundle\release\app-release.aab in Play Console."
 Write-Host ""
-Write-Host "Optional: set Kroger secrets on Fly (or as GH secrets KROGER_* for the workflow):"
+Write-Host "Optional live Kroger on Fly (from your .env.local values):"
 Write-Host "  flyctl secrets set -a cascadialabs-grocer KROGER_ENV=production KROGER_CLIENT_ID=... KROGER_CLIENT_SECRET=..."
