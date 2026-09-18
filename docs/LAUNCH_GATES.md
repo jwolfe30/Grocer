@@ -26,7 +26,7 @@ Last updated with roadmap execution toward **Android then iOS**.
 | Icon / feature graphic | `docs/play-assets/` |
 | Privacy | `/privacy`, `docs/PRIVACY.md` |
 | Listing copy | `docs/PLAY_STORE.md` |
-| Host | `Dockerfile` + `docker-compose.yml`, **or Fly.io** (`fly.toml` + volume at `/app/data`) — see [`DEPLOY.md`](DEPLOY.md) |
+| Host | `Dockerfile` + `docker-compose.yml`, **or Fly.io** (`fly.toml` + volume at `/app/data`) — see [`DEPLOY.md`](DEPLOY.md). Image entrypoint seeds empty volumes from `data/seed/prices.sqlite`. |
 | App Links stub | `public/.well-known/assetlinks.json` — fill SHA256 via `scripts/android-cert-fingerprint.ps1` |
 | Launch checklist | `npm run qa:launch` |
 | Play internal CI | `.github/workflows/play-internal.yml` (manual; needs signing secrets) |

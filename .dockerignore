@@ -9,7 +9,9 @@ coverage
 .tools
 android
 ios
-data
+data/*
+!data/seed/
+!data/seed/**
 *.md
 .env
 .env*.local
@@ -17,7 +19,6 @@ data
 *.keystore
 npm-debug.log*
 yarn-debug.log*
-yarn-error.log*
 .pnpm-debug.log*
 .DS_Store
 *.pem

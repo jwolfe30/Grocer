@@ -135,6 +135,8 @@ npm run cap:aab
 
 Ops on the volume (after deploy): schedule `npm run prices:refresh` on a machine that can reach the same SQLite, or `fly ssh console` and run refresh there so `data/prices.sqlite` stays warm.
 
+**First boot:** `scripts/docker-entrypoint.js` copies `data/seed/prices.sqlite` into the volume when `PRICE_CACHE_PATH` is missing, so cold start still has a warm FM/QFC cache. Runtime DBs under `/data/*.sqlite` stay gitignored; only `data/seed/` ships in the image.
+
 ### Vercel (notes)
 
 - Connect the repo and set the same env vars from [`.env.example`](../.env.example).

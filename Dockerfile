@@ -22,9 +22,10 @@ ENV NODE_ENV=production
 ENV HOSTNAME=0.0.0.0
 ENV PORT=3000
 
-# SQLite defaults use process.cwd()/data — mount host ./data here via compose
+# SQLite defaults use process.cwd()/data — mount host/Fly volume at /app/data
 RUN mkdir -p /app/data
 
 EXPOSE 3000
 
-CMD ["npm", "start"]
+# Seed empty volume from image-baked data/seed/prices.sqlite (warm launch bar)
+CMD ["node", "scripts/docker-entrypoint.js"]

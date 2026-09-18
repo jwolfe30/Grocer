@@ -39,9 +39,11 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# durable price cache (SQLite)
+# durable price cache (SQLite) — keep runtime DBs local; ship warm seed for Fly/Docker
 /data/*.sqlite
 /data/*.sqlite-*
+!/data/seed/
+!/data/seed/**
 
 # local toolchains (JDK, etc.)
 /.tools/
