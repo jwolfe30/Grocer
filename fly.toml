@@ -23,7 +23,8 @@ primary_region = 'sea'
   force_https = true
   auto_stop_machines = 'stop'
   auto_start_machines = true
-  min_machines_running = 1
+  # 0 = scale to zero when idle (cheaper for early launch; cold start on first hit)
+  min_machines_running = 0
   processes = ['app']
 
 [[mounts]]
@@ -31,6 +32,8 @@ primary_region = 'sea'
   destination = '/app/data'
 
 [[vm]]
-  memory = '512mb'
+  # Cheapest practical size for v1 (~$2/mo shared-cpu-1x · 256MB + volume).
+  # Bump memory if Next OOMs under load.
+  memory = '256mb'
   cpu_kind = 'shared'
   cpus = 1

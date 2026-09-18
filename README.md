@@ -26,6 +26,10 @@ This is the opposite of Instacart-style convenience markup: optimize what you *p
 - Hybrid catalog: seeded South King County stores + optional **Kroger Products API** (Fred Meyer / QFC)
 - REST API under `/api/*` for a future mobile client
 
+## Agent / launch handoff
+
+Phases 0–2 are largely done; **Play public + iOS are not.** Start here: **[docs/HANDOFF.md](docs/HANDOFF.md)** (blockers, exact next commands). Also [LAUNCH_GATES.md](docs/LAUNCH_GATES.md), [ROADMAP.md](docs/ROADMAP.md).
+
 ## Stack
 
 - Next.js 15 (App Router) + TypeScript + Tailwind CSS

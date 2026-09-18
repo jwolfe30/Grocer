@@ -3,7 +3,9 @@ import type { CartPlan, Coupon, Offer } from "./types";
 /** Shopper coupon pick at plan time: best available, skip, or a specific clip. */
 export type CouponChoice = "auto" | "none" | (string & {});
 
-export function basePrice(offer: Offer): number {
+export function basePrice(
+  offer: Pick<Offer, "priceUsd" | "salePriceUsd" | "onSale">,
+): number {
   if (offer.onSale && offer.salePriceUsd != null) {
     return offer.salePriceUsd;
   }

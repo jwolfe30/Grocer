@@ -2,6 +2,8 @@
 
 Generated against the active objective. **Do not treat this as goal complete.**
 
+**Full handoff for the next agent:** [`HANDOFF.md`](HANDOFF.md) (state, blockers, exact commands).
+
 ## Objective requirements → evidence
 
 | Requirement | Status | Evidence |

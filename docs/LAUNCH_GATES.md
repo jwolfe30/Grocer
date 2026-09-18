@@ -31,6 +31,17 @@ Last updated with roadmap execution toward **Android then iOS**.
 | Launch checklist | `npm run qa:launch` |
 | Play internal CI | `.github/workflows/play-internal.yml` (manual; needs signing secrets) |
 
+## Cost ballpark (launch)
+
+| Item | Typical cost |
+|------|----------------|
+| Fly.io (256MB shared + 1GB volume) | ~**$2–5 / mo** after short free trial (card required to keep running) |
+| Google Play developer | **$25 once** |
+| Apple Developer (iOS later) | **$99 / year** |
+| GitHub + Kroger API | **$0** for normal early usage |
+
+See [Fly pricing](https://fly.io/pricing) and [Play registration](https://support.google.com/googleplay/android-developer/answer/6112435).
+
 ## Still requires you (cannot finish in-agent)
 
 1. **HTTPS production host** with persistent `data/` — prefer **Fly.io remote builder** from Windows (no local Docker Desktop). `flyctl` is installed locally but **this agent shell cannot run interactive `fly auth login`**. In your own terminal:
