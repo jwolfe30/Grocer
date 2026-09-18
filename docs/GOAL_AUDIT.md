@@ -25,10 +25,13 @@ Generated against the active objective. **Do not treat this as goal complete.**
 
 ## Unlock checklist (shortest path)
 
-1. Create Fly token → GitHub repo secret `FLY_API_TOKEN`
-2. Actions → **fly-deploy** → Run workflow
-3. `$env:CAPACITOR_SERVER_URL='https://cascadialabs-grocer.fly.dev'; npm run cap:sync; npm run cap:aab`
-4. Play Console internal track upload
-5. Mac: `docs/IOS.md`
+1. Create Fly token at https://fly.io/user/personal_access_tokens
+2. Add GitHub repo secret `FLY_API_TOKEN` (Settings → Secrets → Actions)
+3. Actions → **fly-deploy** → Run workflow  
+   (Confirmed 2026-09-18: workflow soft-skips with warning when secret is missing.)
+4. `$env:CAPACITOR_SERVER_URL='https://cascadialabs-grocer.fly.dev'; npm run cap:sync; npm run cap:aab`  
+   or `.\scripts\launch-android.ps1 -SkipDeploy`
+5. Play Console internal track upload
+6. Mac: `docs/IOS.md`
 
 Until 1–4 succeed, **Android is not publicly launched**. Until 5, **iOS is not launched**.

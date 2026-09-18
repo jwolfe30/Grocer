@@ -1,13 +1,15 @@
 # One-shot Android launch helper (run when YOU are ready to ship).
-# Prerequisites: flyctl logged in (`fly auth login`), .env.local with Kroger keys,
+# Prerequisites: flyctl logged in (`fly auth login` or FLY_API_TOKEN), .env.local with Kroger keys,
 #                android/key.properties for signing.
 #
 # Usage:
 #   . .\scripts\android-env.ps1
-#   .\scripts\launch-android.ps1 -AppName your-grocer-app
+#   .\scripts\fly-deploy.ps1                    # if not yet hosted
+#   .\scripts\launch-android.ps1                # Cap sync + AAB at Fly URL
+#   .\scripts\launch-android.ps1 -SkipDeploy    # host already up
 
 param(
-  [Parameter(Mandatory = $true)][string]$AppName,
+  [string]$AppName = "cascadialabs-grocer",
   [string]$Region = "sea",
   [switch]$SkipDeploy,
   [switch]$SkipAab
@@ -36,8 +38,15 @@ if (-not $SkipDeploy) {
   # Ensure app exists (ignore error if already created)
   flyctl apps create $AppName --org personal 2>$null
   flyctl volumes create grocer_data --region $Region --size 1 --app $AppName --yes 2>$null
-  Write-Host "Set secrets from .env.local (KROGER_*), then: flyctl deploy --app $AppName"
+  Write-Host "Set secrets from .env.local (KROGER_*), then: flyctl deploy --remote-only --app $AppName"
+  Write-Host "Or run: .\scripts\fly-deploy.ps1"
   Write-Host "Example: flyctl secrets set KROGER_ENV=production KROGER_CLIENT_ID=... KROGER_CLIENT_SECRET=... --app $AppName"
+  # Prefer dedicated deploy script when using default app name
+  if ($AppName -eq "cascadialabs-grocer") {
+    & (Join-Path $PSScriptRoot "fly-deploy.ps1")
+  } else {
+    flyctl deploy --remote-only --app $AppName
+  }
 }
 
 $hostUrl = "https://$AppName.fly.dev"
