@@ -19,7 +19,15 @@ Do **not** mark the Android→iOS goal complete until HTTPS Android is live on P
 | Phase 4 iOS | **Scaffold only** — needs Mac |
 | Local build + Fly cost + handoff docs | Landed in repo (see recent commits); **push to origin if remote is behind** |
 
-**Shortest unlock:** human runs `flyctl auth login` (or sets `FLY_API_TOKEN` / GH secret) → `.\scripts\fly-deploy.ps1` → point Cap at `https://cascadialabs-grocer.fly.dev` → `npm run cap:sync` → `npm run cap:aab` → Play Console upload.
+**Shortest unlock:** in your own PowerShell from the repo root run:
+
+```powershell
+.\scripts\unlock-fly.ps1
+```
+
+That opens the Fly token + GitHub secrets pages, sets `FLY_API_TOKEN`, and runs **fly-deploy**. Then: `.\scripts\launch-android.ps1 -SkipDeploy` → Play Console upload.
+
+Or manually: `flyctl auth login` / paste token → `.\scripts\fly-deploy.ps1` → Cap HTTPS → AAB.
 
 ---
 

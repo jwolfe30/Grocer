@@ -47,6 +47,8 @@ See [Fly pricing](https://fly.io/pricing) and [Play registration](https://suppor
 1. **HTTPS production host** with persistent `data/` — prefer **Fly.io remote builder** from Windows (no local Docker Desktop). `flyctl` is installed locally but **this agent shell cannot run interactive `fly auth login`**. In your own terminal:
 
 ```powershell
+.\scripts\unlock-fly.ps1
+# or:
 $env:Path = "$env:USERPROFILE\.fly\bin;$env:Path"
 flyctl auth login
 .\scripts\fly-deploy.ps1
