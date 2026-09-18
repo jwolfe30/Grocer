@@ -134,17 +134,21 @@ function priceSourceStrength(source?: Offer["priceSource"]): number {
   return 1;
 }
 
-/** Prefer live (then secondary sources) when prices are within ~15%. */
-const LIVE_PRICE_SLACK = 0.15;
+/** Prefer live (then secondary sources) when prices are close. */
+const LIVE_VS_ESTIMATE_SLACK = 0.35;
+const SAME_TIER_SLACK = 0.15;
 
 function compareMatchedByLiveThenPrice(a: MatchedOffer, b: MatchedOffer): number {
   const priceDelta =
     Math.abs(a.effectivePriceUsd - b.effectivePriceUsd) /
     Math.max(a.effectivePriceUsd, b.effectivePriceUsd, 0.01);
-  if (priceDelta <= LIVE_PRICE_SLACK) {
-    const aLive = a.offer.priceSource === "live" ? 1 : 0;
-    const bLive = b.offer.priceSource === "live" ? 1 : 0;
-    if (aLive !== bLive) return bLive - aLive;
+  const aLive = a.offer.priceSource === "live" ? 1 : 0;
+  const bLive = b.offer.priceSource === "live" ? 1 : 0;
+  // Launch bar: take live shelf over crowd/modeled when the premium is modest.
+  if (aLive !== bLive && priceDelta <= LIVE_VS_ESTIMATE_SLACK) {
+    return bLive - aLive;
+  }
+  if (priceDelta <= SAME_TIER_SLACK) {
     const strength =
       priceSourceStrength(b.offer.priceSource) -
       priceSourceStrength(a.offer.priceSource);
