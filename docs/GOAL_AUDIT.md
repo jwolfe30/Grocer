@@ -15,7 +15,8 @@ Generated against the active objective. **Do not treat this as goal complete.**
 | Phase 2 Android Capacitor + closed test | **Met (emulator)** | APK on emulator; AAB prerelease; human in-store pending |
 | Phase 3 public Play launch | **Blocked** | Artifacts ready; needs HTTPS host + Play Console |
 | Phase 4 iOS | **Scaffold only** | `ios/` + docs; needs Mac/Xcode/TestFlight |
-| Launch bar: mostly real prices | **Met for FM/QFC** | Live-first ranking + warm cache; non-Kroger default exclude |
+| Launch bar: mostly real prices | **Met for FM/QFC (re-verified 2026-09-18)** | `node scripts/launch-bar-check.mjs` → 4/5 live on recommended plan; pool 119 live / 9 stores after `prices:refresh` |
+| HTTPS production host | **Not created** | `cascadialabs-grocer.fly.dev` DNS does not resolve; fly-deploy soft-skips without `FLY_API_TOKEN` |
 
 ## Hard blockers (agent cannot finish alone)
 

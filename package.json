@@ -10,6 +10,7 @@
     "kroger:probe": "node scripts/kroger-probe.mjs",
     "qa:smoke": "node scripts/qa-smoke.mjs",
     "qa:launch": "node scripts/qa-launch-check.mjs",
+    "qa:launch-bar": "node scripts/launch-bar-check.mjs",
     "prices:refresh": "tsx scripts/prices-refresh.ts",
     "prices:stats": "tsx scripts/prices-stats.ts",
     "prices:refresh:check": "tsx scripts/prices-stats.ts --check",

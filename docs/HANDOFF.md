@@ -135,6 +135,7 @@ npm run build          # must pass (tsconfig excludes scripts/)
 npm run qa:launch      # artifact presence checklist
 # With Next listening on :3000:
 npm run qa:smoke       # see docs/QA.md — stores, optimize, plan clicks, Let’s shop
+npm run qa:launch-bar  # typical 98042 list → mostly live on recommended plan
 npm run prices:stats   # cache health; refresh if stale: npm run prices:refresh
 ```
 
