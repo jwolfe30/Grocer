@@ -124,6 +124,14 @@ function ensureSchema(db: SqliteDb) {
   if (!receiptCols.some((c) => c.name === "image_meta_json")) {
     db.exec(`ALTER TABLE receipts ADD COLUMN image_meta_json TEXT`);
   }
+
+  // Session expiry; legacy rows (NULL) are treated as expired 30 days after created_at.
+  const sessionCols = db
+    .prepare(`PRAGMA table_info(sessions)`)
+    .all() as Array<{ name: string }>;
+  if (!sessionCols.some((c) => c.name === "expires_at")) {
+    db.exec(`ALTER TABLE sessions ADD COLUMN expires_at TEXT`);
+  }
 }
 
 export function initAppDb(path = defaultDbPath()): SqliteDb {

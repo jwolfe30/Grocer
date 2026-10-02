@@ -36,6 +36,7 @@ import {
 } from "@/lib/pricing";
 import { buildPlansFromMatches } from "@/lib/optimize";
 import { newId } from "@/lib/id";
+import { DEV_TOOLS_CLIENT } from "@/lib/dev-flags";
 
 const DEVICE_LIST_KEY = "grocer_device_list_id";
 
@@ -726,7 +727,7 @@ export default function HomePage() {
 
         const optRes = await fetch(`/api/lists/${list.id}/optimize`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...authHeaders() },
           body: JSON.stringify({
             preferLocal,
             preferOrganic,
@@ -1142,16 +1143,18 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="mb-4">
-              <button
-                type="button"
-                onClick={addRandomDevItems}
-                className="border border-dashed border-[var(--line)] px-2.5 py-1.5 text-xs font-semibold tracking-wide text-[var(--ink-muted)] uppercase transition hover:border-[var(--leaf)] hover:text-[var(--leaf-deep)]"
-                title="Dev: add 15 random list items"
-              >
-                Dev +15
-              </button>
-            </div>
+            {DEV_TOOLS_CLIENT ? (
+              <div className="mb-4">
+                <button
+                  type="button"
+                  onClick={addRandomDevItems}
+                  className="border border-dashed border-[var(--line)] px-2.5 py-1.5 text-xs font-semibold tracking-wide text-[var(--ink-muted)] uppercase transition hover:border-[var(--leaf)] hover:text-[var(--leaf-deep)]"
+                  title="Dev: add 15 random list items"
+                >
+                  Dev +15
+                </button>
+              </div>
+            ) : null}
 
             {shareUrl ? (
               <p className="mb-4 break-all text-sm text-[var(--ink-muted)]">

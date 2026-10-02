@@ -18,7 +18,7 @@ import type {
  * - Salt: 16 random bytes (hex), stored as `salt:hash` hex pair
  *
  * Rate limiting: in-memory per-IP on /api/auth/login, /api/auth/register, and DELETE /api/account
- * (see src/lib/rate-limit.ts). Sessions: durable in SQLite (token → userId). Client still sends
+ * (see src/lib/rate-limit.ts). Sessions: durable in SQLite (token → userId), 30-day sliding expiry. Client still sends
  * Bearer token (localStorage); no httpOnly cookie path in this app yet.
  */
 
@@ -247,12 +247,20 @@ export function loginUser(input: {
   return { user: toPublicUser(user), token: createSession(user.id) };
 }
 
+const SESSION_TTL_MS = 30 * 24 * 3600_000;
+/** Sliding renewal: extend once less than this much lifetime remains. */
+const SESSION_RENEW_BELOW_MS = 15 * 24 * 3600_000;
+
+function sessionExpiry(fromMs = Date.now()): string {
+  return new Date(fromMs + SESSION_TTL_MS).toISOString();
+}
+
 function createSession(userId: string): string {
   const token = createHash("sha256").update(randomBytes(32)).digest("hex");
   const db = initAppDb();
   db.prepare(
-    `INSERT INTO sessions (token, user_id, created_at) VALUES (?, ?, ?)`,
-  ).run(token, userId, nowIso());
+    `INSERT INTO sessions (token, user_id, created_at, expires_at) VALUES (?, ?, ?, ?)`,
+  ).run(token, userId, nowIso(), sessionExpiry());
   return token;
 }
 
@@ -276,9 +284,26 @@ export function userFromToken(token: string | null | undefined): UserAccount | u
   if (!token) return undefined;
   const db = initAppDb();
   const session = db
-    .prepare(`SELECT user_id FROM sessions WHERE token = ?`)
-    .get(token) as { user_id: string } | undefined;
+    .prepare(`SELECT user_id, created_at, expires_at FROM sessions WHERE token = ?`)
+    .get(token) as
+    | { user_id: string; created_at: string; expires_at: string | null }
+    | undefined;
   if (!session) return undefined;
+
+  const now = Date.now();
+  const expiresMs = session.expires_at
+    ? Date.parse(session.expires_at)
+    : Date.parse(session.created_at) + SESSION_TTL_MS;
+  if (!Number.isFinite(expiresMs) || expiresMs <= now) {
+    db.prepare(`DELETE FROM sessions WHERE token = ?`).run(token);
+    return undefined;
+  }
+  if (expiresMs - now < SESSION_RENEW_BELOW_MS) {
+    db.prepare(`UPDATE sessions SET expires_at = ? WHERE token = ?`).run(
+      sessionExpiry(now),
+      token,
+    );
+  }
   return getUser(session.user_id);
 }
 

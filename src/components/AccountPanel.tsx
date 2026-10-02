@@ -8,6 +8,7 @@ import type {
   ReceiptImageMeta,
   SaleAlert,
 } from "@/lib/account-types";
+import { DEV_TOOLS_CLIENT } from "@/lib/dev-flags";
 import { formatUsd } from "@/lib/pricing";
 
 const TOKEN_KEY = "grocer_token";
@@ -378,26 +379,28 @@ export function AccountMenu({ zip, onApplyFrequentItems, onAuthChange }: Props) 
 
   return (
     <>
-      <div className="absolute top-5 left-5 z-40 flex items-center gap-2 md:top-8 md:left-8">
-        <label className="inline-flex cursor-pointer items-center gap-2 border border-[var(--line)] bg-[var(--card)]/90 px-2.5 py-1.5 text-xs font-semibold tracking-wide text-[var(--ink-muted)] uppercase backdrop-blur">
-          <span>Dev</span>
-          <input
-            type="checkbox"
-            className="peer sr-only"
-            checked={Boolean(user)}
-            disabled={busy}
-            onChange={() => void toggleDevAuth()}
-            aria-label="Developer toggle logged in"
-          />
-          <span
-            className="relative h-5 w-9 rounded-full bg-[#c9d5cc] transition peer-checked:bg-[var(--leaf)] peer-disabled:opacity-50 after:absolute after:top-0.5 after:left-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition peer-checked:after:translate-x-4"
-            aria-hidden
-          />
-          <span className="normal-case tracking-normal">
-            {user ? "Logged in" : "Logged out"}
-          </span>
-        </label>
-      </div>
+      {DEV_TOOLS_CLIENT ? (
+        <div className="absolute top-5 left-5 z-40 flex items-center gap-2 md:top-8 md:left-8">
+          <label className="inline-flex cursor-pointer items-center gap-2 border border-[var(--line)] bg-[var(--card)]/90 px-2.5 py-1.5 text-xs font-semibold tracking-wide text-[var(--ink-muted)] uppercase backdrop-blur">
+            <span>Dev</span>
+            <input
+              type="checkbox"
+              className="peer sr-only"
+              checked={Boolean(user)}
+              disabled={busy}
+              onChange={() => void toggleDevAuth()}
+              aria-label="Developer toggle logged in"
+            />
+            <span
+              className="relative h-5 w-9 rounded-full bg-[#c9d5cc] transition peer-checked:bg-[var(--leaf)] peer-disabled:opacity-50 after:absolute after:top-0.5 after:left-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition peer-checked:after:translate-x-4"
+              aria-hidden
+            />
+            <span className="normal-case tracking-normal">
+              {user ? "Logged in" : "Logged out"}
+            </span>
+          </label>
+        </div>
+      ) : null}
 
       <div className="absolute top-5 right-5 z-40 md:top-8 md:right-8">
         <button

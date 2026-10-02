@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getOffersForOptimize } from "@/lib/catalog";
-import { getList, updateList } from "@/lib/list-store";
+import { authorizeList } from "@/lib/list-access";
+import { updateList } from "@/lib/list-store";
 import { matchListItems } from "@/lib/match";
 import { optimizeSchema } from "@/lib/schemas";
 
@@ -9,7 +10,9 @@ export async function POST(
   context: { params: Promise<{ id: string }> },
 ) {
   const { id } = await context.params;
-  let list = getList(id);
+  const access = authorizeList(request, id);
+  if (!access.ok) return access.response;
+  let list = access.list;
   if (!list) return NextResponse.json({ error: "List not found" }, { status: 404 });
 
   const body = await request.json().catch(() => ({}));

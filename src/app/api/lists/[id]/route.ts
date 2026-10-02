@@ -1,14 +1,16 @@
 import { NextResponse } from "next/server";
-import { getList, upsertList } from "@/lib/list-store";
+import { authorizeList } from "@/lib/list-access";
+import { upsertList } from "@/lib/list-store";
 import { updateListSchema } from "@/lib/schemas";
-import { parseBearer, userFromToken } from "@/lib/user-store";
 
 export async function GET(
-  _request: Request,
+  request: Request,
   context: { params: Promise<{ id: string }> },
 ) {
   const { id } = await context.params;
-  const list = getList(id);
+  const access = authorizeList(request, id);
+  if (!access.ok) return access.response;
+  const { list } = access;
   if (!list) return NextResponse.json({ error: "List not found" }, { status: 404 });
   return NextResponse.json({
     list,
@@ -21,12 +23,14 @@ export async function PATCH(
   context: { params: Promise<{ id: string }> },
 ) {
   const { id } = await context.params;
+  const access = authorizeList(request, id);
+  if (!access.ok) return access.response;
   const body = await request.json().catch(() => ({}));
   const parsed = updateListSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
-  const user = userFromToken(parseBearer(request));
+  const { user } = access;
   const list = upsertList(id, {
     ...parsed.data,
     ...(user ? { userId: user.id } : {}),
