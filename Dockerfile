@@ -22,8 +22,9 @@ ENV NODE_ENV=production
 ENV HOSTNAME=0.0.0.0
 ENV PORT=3000
 
-# SQLite defaults use process.cwd()/data — mount host/Fly volume at /app/data
-RUN mkdir -p /app/data
+# SQLite defaults use process.cwd()/data — mount host/Fly volume at /app/data.
+# The volume mount hides /app/data/seed, so keep a copy of the seed outside it.
+RUN mkdir -p /app/data /app/seed && cp -r data/seed/. /app/seed/
 
 EXPOSE 3000
 

@@ -8,7 +8,7 @@ const { spawn } = require("node:child_process");
 
 const root = process.cwd();
 const dataDir = process.env.APP_DATA_DIR?.trim() || join(root, "data");
-const seedDir = join(root, "data", "seed");
+const seedDir = existsSync(join(root, "seed")) ? join(root, "seed") : join(root, "data", "seed");
 
 function resolvePath(envKey, fallbackName) {
   const fromEnv = process.env[envKey]?.trim();
