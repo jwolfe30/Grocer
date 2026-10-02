@@ -54,8 +54,8 @@ jobs:
 
           big=$(echo "$machines" | jq --argjson max "$MAX_MEMORY_MB" '[.[] | select(.config.guest.memory_mb > $max or .config.guest.cpu_kind != "shared")] | length')
           if [ "$big" -gt 0 ]; then
-            echo "::error::$big machine(s) above shared/${MAX_MEMORY_MB}MB — resizing to shared-cpu-1x 256MB"
-            flyctl scale vm shared-cpu-1x --memory 256 -a "$APP" -y
+            echo "::error::$big machine(s) above shared/${MAX_MEMORY_MB}MB — resizing to shared-cpu-1x 512MB"
+            flyctl scale vm shared-cpu-1x --vm-memory 512 -a "$APP"
             problems=1
           fi
 
