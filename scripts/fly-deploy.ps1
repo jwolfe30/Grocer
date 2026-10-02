@@ -38,7 +38,8 @@ if (-not $hasVol) {
 }
 
 Write-Host "Deploying (set Kroger secrets first if needed: flyctl secrets set -a $app KROGER_...) ..."
-flyctl deploy -a $app --remote-only 2>&1 | Out-Host
+flyctl deploy -a $app --remote-only --ha=false 2>&1 | Out-Host
+flyctl scale count 1 -a $app -y 2>&1 | Out-Host
 
 Write-Host ""
 Write-Host "App URL: https://$app.fly.dev"

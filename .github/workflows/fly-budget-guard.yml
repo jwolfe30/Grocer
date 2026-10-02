@@ -1,0 +1,72 @@
+# Daily spend guard for Fly (Fly has no billing cap or alerts).
+# Enforces: at most 1 machine, shared CPU, <= 512MB RAM, <= 1 volume of <= 3GB.
+# Out-of-bounds machines are scaled back down and the run fails so GitHub emails you.
+# Soft-skips without FLY_API_TOKEN.
+
+name: fly-budget-guard
+
+on:
+  schedule:
+    - cron: "17 15 * * *"
+  workflow_dispatch:
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      APP: grocer-lrrcsg
+      MAX_MACHINES: "1"
+      MAX_MEMORY_MB: "512"
+      MAX_VOLUMES: "1"
+      MAX_VOLUME_GB: "3"
+    steps:
+      - name: Check Fly token
+        id: token
+        run: |
+          if [ -z "$FLY_API_TOKEN" ]; then
+            echo "::warning::Skipping budget guard — missing secret FLY_API_TOKEN"
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+        if: steps.token.outputs.ready == 'true'
+
+      - name: Enforce limits
+        if: steps.token.outputs.ready == 'true'
+        run: |
+          set -euo pipefail
+          problems=0
+
+          machines=$(flyctl machines list -a "$APP" --json)
+          count=$(echo "$machines" | jq 'length')
+          echo "machines: $count"
+          echo "$machines" | jq -r '.[] | "  \(.id) \(.region) \(.state) \(.config.guest.cpu_kind) x\(.config.guest.cpus) \(.config.guest.memory_mb)MB"'
+
+          if [ "$count" -gt "$MAX_MACHINES" ]; then
+            echo "::error::$count machines > $MAX_MACHINES — scaling back"
+            flyctl scale count "$MAX_MACHINES" -a "$APP" -y
+            problems=1
+          fi
+
+          big=$(echo "$machines" | jq --argjson max "$MAX_MEMORY_MB" '[.[] | select(.config.guest.memory_mb > $max or .config.guest.cpu_kind != "shared")] | length')
+          if [ "$big" -gt 0 ]; then
+            echo "::error::$big machine(s) above shared/${MAX_MEMORY_MB}MB — resizing to shared-cpu-1x 256MB"
+            flyctl scale vm shared-cpu-1x --memory 256 -a "$APP" -y
+            problems=1
+          fi
+
+          vols=$(flyctl volumes list -a "$APP" --json)
+          vcount=$(echo "$vols" | jq 'length')
+          vbig=$(echo "$vols" | jq --argjson max "$MAX_VOLUME_GB" '[.[] | select(.size_gb > $max)] | length')
+          echo "volumes: $vcount (over ${MAX_VOLUME_GB}GB: $vbig)"
+          if [ "$vcount" -gt "$MAX_VOLUMES" ] || [ "$vbig" -gt 0 ]; then
+            echo "::error::Volume limits exceeded — review with: flyctl volumes list -a $APP (not auto-deleted to protect data)"
+            problems=1
+          fi
+
+          if [ "$problems" -ne 0 ]; then exit 1; fi
+          echo "Within budget limits."

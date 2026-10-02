@@ -67,7 +67,9 @@ jobs:
         if: steps.token.outputs.ready == 'true'
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-        run: flyctl deploy --remote-only -a grocer-lrrcsg
+        run: |
+          flyctl deploy --remote-only --ha=false -a grocer-lrrcsg
+          flyctl scale count 1 -a grocer-lrrcsg -y
 
       - name: Optional Kroger secrets
         if: steps.token.outputs.ready == 'true'

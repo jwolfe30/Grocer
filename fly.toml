@@ -27,6 +27,12 @@ primary_region = 'lax'
   min_machines_running = 0
   processes = ['app']
 
+  # Spend guard: one small machine absorbs bursts by queueing instead of Fly adding capacity.
+  [http_service.concurrency]
+    type = 'requests'
+    soft_limit = 40
+    hard_limit = 60
+
 [[mounts]]
   source = 'grocer_data'
   destination = '/app/data'
