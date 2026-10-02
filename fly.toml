@@ -4,8 +4,8 @@
 #
 # Docs: docs/DEPLOY.md § Fly.io
 
-app = 'cascadialabs-grocer'
-primary_region = 'sea'
+app = 'grocer-lrrcsg'
+primary_region = 'lax'
 
 [build]
   dockerfile = 'Dockerfile'

@@ -79,7 +79,7 @@ Key commits:
 
 ### Deploy / store
 
-- Fly app name: `cascadialabs-grocer` (`fly.toml`)
+- Fly app name: `grocer-lrrcsg` (`fly.toml`)
 - Scripts: `scripts/fly-deploy.ps1`, `scripts/android-env.ps1`, `scripts/android-cert-fingerprint.ps1`
 - Workflows: `.github/workflows/fly-deploy.yml`, `play-internal.yml`, `prices-refresh.yml`
 - Listing: `docs/PLAY_STORE.md`, `docs/play-screenshots/`, `docs/play-assets/`
@@ -112,13 +112,13 @@ Then from repo root (after committing the 4 local files above):
 
 ```powershell
 .\scripts\fly-deploy.ps1
-flyctl secrets set -a cascadialabs-grocer KROGER_ENV=production KROGER_CLIENT_ID=... KROGER_CLIENT_SECRET=...
+flyctl secrets set -a grocer-lrrcsg KROGER_ENV=production KROGER_CLIENT_ID=... KROGER_CLIENT_SECRET=...
 ```
 
 ### B. Point Android at HTTPS and rebuild AAB
 
 ```powershell
-$env:CAPACITOR_SERVER_URL = "https://cascadialabs-grocer.fly.dev"
+$env:CAPACITOR_SERVER_URL = "https://grocer-lrrcsg.fly.dev"
 npm run cap:sync
 npm run cap:aab
 # Fill public/.well-known/assetlinks.json via:
@@ -128,7 +128,7 @@ npm run cap:aab
 
 ### C. Play Console
 
-Follow `docs/PLAY_STORE.md`. Upload AAB + screenshots/assets; set privacy URL to `https://cascadialabs-grocer.fly.dev/privacy`.
+Follow `docs/PLAY_STORE.md`. Upload AAB + screenshots/assets; set privacy URL to `https://grocer-lrrcsg.fly.dev/privacy`.
 
 ### D. iOS (later)
 

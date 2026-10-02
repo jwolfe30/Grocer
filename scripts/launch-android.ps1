@@ -9,7 +9,7 @@
 #   .\scripts\launch-android.ps1 -SkipDeploy    # host already up
 
 param(
-  [string]$AppName = "cascadialabs-grocer",
+  [string]$AppName = "grocer-lrrcsg",
   [string]$Region = "sea",
   [switch]$SkipDeploy,
   [switch]$SkipAab
@@ -42,7 +42,7 @@ if (-not $SkipDeploy) {
   Write-Host "Or run: .\scripts\fly-deploy.ps1"
   Write-Host "Example: flyctl secrets set KROGER_ENV=production KROGER_CLIENT_ID=... KROGER_CLIENT_SECRET=... --app $AppName"
   # Prefer dedicated deploy script when using default app name
-  if ($AppName -eq "cascadialabs-grocer") {
+  if ($AppName -eq "grocer-lrrcsg") {
     & (Join-Path $PSScriptRoot "fly-deploy.ps1")
   } else {
     flyctl deploy --remote-only --app $AppName

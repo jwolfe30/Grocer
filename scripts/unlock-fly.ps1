@@ -11,7 +11,7 @@
 #   .\scripts\unlock-fly.ps1
 #
 # After deploy, set live Kroger on Fly yourself (values stay local):
-#   flyctl secrets set -a cascadialabs-grocer KROGER_ENV=production KROGER_CLIENT_ID=... KROGER_CLIENT_SECRET=...
+#   flyctl secrets set -a grocer-lrrcsg KROGER_ENV=production KROGER_CLIENT_ID=... KROGER_CLIENT_SECRET=...
 
 $ErrorActionPreference = "Stop"
 $env:Path = "$env:USERPROFILE\.fly\bin;$env:LOCALAPPDATA\Programs\gh;$env:Path"
@@ -65,8 +65,8 @@ if ($LASTEXITCODE -ne 0) {
 
 Write-Host ""
 Write-Host "Deploy workflow finished. Verify:"
-Write-Host "  https://cascadialabs-grocer.fly.dev/"
-Write-Host "  https://cascadialabs-grocer.fly.dev/privacy"
+Write-Host "  https://grocer-lrrcsg.fly.dev/"
+Write-Host "  https://grocer-lrrcsg.fly.dev/privacy"
 Write-Host ""
 Write-Host "Next (Android HTTPS AAB):"
 Write-Host "  . .\scripts\android-env.ps1"
@@ -74,4 +74,4 @@ Write-Host "  .\scripts\launch-android.ps1 -SkipDeploy"
 Write-Host "Then upload android\app\build\outputs\bundle\release\app-release.aab in Play Console."
 Write-Host ""
 Write-Host "Optional live Kroger on Fly (from your .env.local values):"
-Write-Host "  flyctl secrets set -a cascadialabs-grocer KROGER_ENV=production KROGER_CLIENT_ID=... KROGER_CLIENT_SECRET=..."
+Write-Host "  flyctl secrets set -a grocer-lrrcsg KROGER_ENV=production KROGER_CLIENT_ID=... KROGER_CLIENT_SECRET=..."

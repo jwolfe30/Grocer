@@ -18,8 +18,8 @@ if (-not (Get-Command flyctl -ErrorAction SilentlyContinue)) {
 
 flyctl auth whoami | Out-Host
 
-$app = "cascadialabs-grocer"
-$region = "sea"
+$app = "grocer-lrrcsg"
+$region = "lax"
 
 # Ensure app exists
 $apps = flyctl apps list --json 2>$null | ConvertFrom-Json
