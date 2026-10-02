@@ -38,8 +38,8 @@ primary_region = 'lax'
   destination = '/app/data'
 
 [[vm]]
-  # Cheapest practical size for v1 (~$2/mo shared-cpu-1x · 256MB + volume).
-  # Bump memory if Next OOMs under load.
-  memory = '256mb'
+  # 256MB starved Next (15MB free) and outbound Kroger calls timed out; 512MB is ~$3/mo always-on.
+  # fly-budget-guard fails the run above 512MB.
+  memory = '512mb'
   cpu_kind = 'shared'
   cpus = 1
